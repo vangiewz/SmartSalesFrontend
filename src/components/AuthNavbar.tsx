@@ -81,7 +81,7 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
 									</div>
 								</div>
 								<span className="text-xl font-bold bg-gradient-to-r from-purple-700 to-pink-500 bg-clip-text text-transparent mb-1">
-									{user?.nombre || user?.email || 'Usuario'}
+									{user?.nombre || user?.correo || 'Usuario'}
 								</span>
 							</div>
 							{/* Menú principal */}
@@ -156,7 +156,7 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
 								</div>
 							</div>
 							<span className="text-xl font-bold bg-gradient-to-r from-purple-700 to-pink-500 bg-clip-text text-transparent mb-1">
-								{user?.nombre || user?.email || 'Usuario'}
+								{user?.nombre || user?.correo || 'Usuario'}
 							</span>
 						</div>
 						{/* Menú principal */}
