@@ -1,6 +1,6 @@
 // src/context/AuthContext.tsx
 import { createContext, useState, useEffect, type ReactNode } from "react";
-import { apiLogin, apiRegister, apiMe, apiLogout } from "../lib/auth";
+import { apiLogin, apiRegister, apiLogout } from "../lib/auth";
 import type { AuthUser } from "../lib/client";
 
 export type AuthContextType = {

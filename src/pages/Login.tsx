@@ -26,8 +26,8 @@ export default function LoginPage() {
         },
       })
       navigate('/dashboard')
-    } catch (error: any) {
-      toast.error(error?.message || 'Error al iniciar sesión', {
+    } catch (error: unknown) {
+      toast.error((error as Error)?.message || 'Error al iniciar sesión', {
         style: {
           borderRadius: '12px',
           background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',

@@ -1,13 +1,13 @@
 // src/lib/auth.ts
 import { api, type AuthUser, type Tokens } from "./client";
 
-function getErr(err: any): Error {
-  const d = err?.response?.data;
+function getErr(err: unknown): Error {
+  const d = (err as any)?.response?.data;
   const msg =
     (typeof d === "string" && d) ||
     d?.detail ||
     d?.message ||
-    (err?.message as string) ||
+    ((err as any)?.message as string) ||
     "Error de red";
   return new Error(msg);
 }

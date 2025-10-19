@@ -33,8 +33,8 @@ export default function RegisterPage() {
         },
       })
       navigate('/login')
-    } catch (error: any) {
-      toast.error(error?.message || 'Error al registrar', {
+    } catch (error: unknown) {
+      toast.error((error as Error)?.message || 'Error al registrar', {
         style: {
           borderRadius: '12px',
           background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
