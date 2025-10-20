@@ -13,10 +13,12 @@ export const api = axios.create({
   withCredentials: false, // no usamos cookies; tokens por header
 });
 
-// ⬇️ INYECTAR TOKEN EN CADA REQUEST (excepto login/register)
+// ⬇️ INYECTAR TOKEN EN CADA REQUEST (excepto login/register/password-reset)
 api.interceptors.request.use((config) => {
   const url = String(config.url || "");
-  const isPublic = url.startsWith("login/") || url.startsWith("register/");
+  const isPublic = url.startsWith("login/") || 
+                   url.startsWith("register/") || 
+                   url.startsWith("password-reset/");
   if (!isPublic) {
     const token = localStorage.getItem("access_token");
     if (token) config.headers.Authorization = `Bearer ${token}`;
