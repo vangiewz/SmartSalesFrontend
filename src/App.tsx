@@ -6,6 +6,8 @@ import RegisterPage from './pages/Register.tsx'
 import DashboardPage from './pages/Dashboard.tsx'
 import ForgotPasswordPage from './pages/ForgotPassword.tsx'
 import ResetPasswordPage from './pages/ResetPassword.tsx'
+import AccesosCuentasPage from './pages/AccesosCuentas.tsx'
+import GestionUsuariosPage from './pages/GestionUsuarios.tsx'
 
 export default function App() {
   return (
@@ -21,6 +23,22 @@ export default function App() {
           element={
             <ProtectedRoute>
               <DashboardPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/accesos-cuentas" 
+          element={
+            <ProtectedRoute>
+              <AccesosCuentasPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/gestion-usuarios" 
+          element={
+            <ProtectedRoute>
+              <GestionUsuariosPage />
             </ProtectedRoute>
           } 
         />

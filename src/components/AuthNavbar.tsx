@@ -1,6 +1,6 @@
 
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, User, ShoppingCart, Sparkles, Home, Menu, MapPin } from 'lucide-react';
+import { LogOut, User, ShoppingCart, Sparkles, Home, Menu, MapPin, Shield } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -120,6 +120,16 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
 											Direcciones
 										</NavLink>
 									</li>
+									{user?.is_admin && (
+										<li>
+											<NavLink to="/accesos-cuentas" className={({ isActive }) =>
+												`flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${isActive ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg scale-105' : 'text-purple-900 hover:bg-purple-200/40 hover:text-purple-800 hover:scale-105'}`
+											}>
+												<Shield className="h-6 w-6" />
+												Accesos y Cuentas
+											</NavLink>
+										</li>
+									)}
 									{/* Aquí puedes agregar fácilmente más módulos */}
 								</ul>
 							</nav>
@@ -195,6 +205,16 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
 										Direcciones
 									</NavLink>
 								</li>
+								{user?.is_admin && (
+									<li>
+										<NavLink to="/accesos-cuentas" className={({ isActive }) =>
+											`flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${isActive ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg scale-105' : 'text-purple-900 hover:bg-purple-200/40 hover:text-purple-800 hover:scale-105'}`
+										}>
+											<Shield className="h-6 w-6" />
+											Accesos y Cuentas
+										</NavLink>
+									</li>
+								)}
 								{/* Aquí puedes agregar fácilmente más módulos */}
 							</ul>
 						</nav>

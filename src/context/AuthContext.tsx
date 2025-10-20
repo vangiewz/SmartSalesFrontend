@@ -2,6 +2,7 @@
 import { createContext, useState, useEffect, type ReactNode } from "react";
 import { apiLogin, apiRegister, apiLogout } from "../lib/auth";
 import type { AuthUser } from "../lib/client";
+import { getMyRoles } from "../services/api";
 
 export type AuthContextType = {
   user: AuthUser | null;
@@ -24,12 +25,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (payload: { email: string; password: string; nombre: string; telefono?: string }) => {
     const { user } = await apiRegister(payload);
-    setUser(user);
+    
+    // Cargar roles del usuario
+    try {
+      const rolesData = await getMyRoles();
+      setUser({ ...user, ...rolesData });
+    } catch {
+      // Si falla la carga de roles, aún establecemos el usuario sin roles
+      setUser(user);
+    }
   };
 
   const login = async (email: string, password: string) => {
     const { user } = await apiLogin(email, password);
-    setUser(user);
+    
+    // Cargar roles del usuario
+    try {
+      const rolesData = await getMyRoles();
+      setUser({ ...user, ...rolesData });
+    } catch {
+      // Si falla la carga de roles, aún establecemos el usuario sin roles
+      setUser(user);
+    }
   };
 
   const logout = () => {
