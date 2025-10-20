@@ -47,6 +47,11 @@ export type AuthUser = {
   nombre: string | null;
   telefono: string | null;
   roles: string[];
+  roles_ids?: number[];
+  is_admin?: boolean;
+  is_vendedor?: boolean;
+  is_analista?: boolean;
+  is_cliente?: boolean;
 };
 
 export type Tokens = {
