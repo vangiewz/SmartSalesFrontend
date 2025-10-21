@@ -3,11 +3,13 @@ import ProtectedRoute from './components/ProtectedRoute'
 import HomePage from './pages/Home.tsx'
 import LoginPage from './pages/Login.tsx'
 import RegisterPage from './pages/Register.tsx'
-import DashboardPage from './pages/Dashboard.tsx'
+import InicioPage from './pages/Inicio.tsx'
 import ForgotPasswordPage from './pages/ForgotPassword.tsx'
 import ResetPasswordPage from './pages/ResetPassword.tsx'
 import AccesosCuentasPage from './pages/AccesosCuentas.tsx'
 import GestionUsuariosPage from './pages/GestionUsuarios.tsx'
+import GestionComercialPage from './pages/GestionComercial.tsx'
+import GestionProductosPage from './pages/GestionProductos.tsx'
 
 export default function App() {
   return (
@@ -19,10 +21,10 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route 
-          path="/dashboard" 
+          path="/inicio" 
           element={
             <ProtectedRoute>
-              <DashboardPage />
+              <InicioPage />
             </ProtectedRoute>
           } 
         />
@@ -39,6 +41,22 @@ export default function App() {
           element={
             <ProtectedRoute>
               <GestionUsuariosPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/gestion-comercial" 
+          element={
+            <ProtectedRoute>
+              <GestionComercialPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/gestion-productos" 
+          element={
+            <ProtectedRoute>
+              <GestionProductosPage />
             </ProtectedRoute>
           } 
         />

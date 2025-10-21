@@ -143,7 +143,7 @@ export default function RegisterPage() {
             disabled={loading}
             className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-2.5 sm:py-3 text-sm sm:text-base rounded-xl hover:shadow-2xl hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl"
           >
-            {loading ? 'Creando cuenta...' : 'Crear Cuenta ✨'}
+            {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
           </button>
 
           <div className="text-center text-xs sm:text-sm text-gray-700 pt-3 sm:pt-4 border-t-2 border-purple-100">
