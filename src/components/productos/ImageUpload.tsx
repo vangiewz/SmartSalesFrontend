@@ -12,7 +12,7 @@ interface ImageUploadProps {
   aspectRatio?: number // 1 para cuadrado (800x800), 1.33 para 4:3 (800x600)
 }
 
-export default function ImageUpload({ value, onChange, preview, required, error, aspectRatio = 1 }: ImageUploadProps) {
+export default function ImageUpload({ onChange, preview, required, error, aspectRatio = 1 }: ImageUploadProps) {
   const [previewUrl, setPreviewUrl] = useState<string>(preview || '')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [showCropModal, setShowCropModal] = useState(false)
