@@ -25,7 +25,7 @@ export default function LoginPage() {
           fontWeight: 'bold',
         },
       })
-      navigate('/dashboard')
+      navigate('/inicio')
     } catch (error: unknown) {
       toast.error((error as Error)?.message || 'Error al iniciar sesión', {
         style: {

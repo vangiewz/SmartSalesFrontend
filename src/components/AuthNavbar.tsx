@@ -1,6 +1,6 @@
 
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, User, ShoppingCart, Sparkles, Home, Menu, MapPin, Shield } from 'lucide-react';
+import { LogOut, User, ShoppingCart, Sparkles, Home, Menu, MapPin, Shield, Package } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -88,11 +88,11 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
 							<nav className="flex-1 overflow-y-auto py-8 px-4">
 								<ul className="space-y-3">
 									<li>
-										<NavLink to="/dashboard" className={({ isActive }) =>
+										<NavLink to="/inicio" className={({ isActive }) =>
 											`flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${isActive ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg scale-105' : 'text-purple-900 hover:bg-purple-200/40 hover:text-purple-800 hover:scale-105'}`
 										}>
 											<Home className="h-6 w-6" />
-											Dashboard
+											Inicio
 										</NavLink>
 									</li>
 									<li>
@@ -118,6 +118,14 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
 										}>
 											<MapPin className="h-6 w-6" />
 											Direcciones
+										</NavLink>
+									</li>
+									<li>
+										<NavLink to="/gestion-comercial" className={({ isActive }) =>
+											`flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${isActive ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg scale-105' : 'text-purple-900 hover:bg-purple-200/40 hover:text-purple-800 hover:scale-105'}`
+										}>
+											<Package className="h-6 w-6" />
+											Gestión Comercial
 										</NavLink>
 									</li>
 									{user?.is_admin && (
@@ -173,11 +181,11 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
 						<nav className="flex-1 overflow-y-auto py-8 px-4">
 							<ul className="space-y-3">
 								<li>
-									<NavLink to="/dashboard" className={({ isActive }) =>
+									<NavLink to="/inicio" className={({ isActive }) =>
 										`flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${isActive ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg scale-105' : 'text-purple-900 hover:bg-purple-200/40 hover:text-purple-800 hover:scale-105'}`
 									}>
 										<Home className="h-6 w-6" />
-										Dashboard
+										Inicio
 									</NavLink>
 								</li>
 								<li>
@@ -203,6 +211,14 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
 									}>
 										<MapPin className="h-6 w-6" />
 										Direcciones
+									</NavLink>
+								</li>
+								<li>
+									<NavLink to="/gestion-comercial" className={({ isActive }) =>
+										`flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${isActive ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg scale-105' : 'text-purple-900 hover:bg-purple-200/40 hover:text-purple-800 hover:scale-105'}`
+									}>
+										<Package className="h-6 w-6" />
+										Gestión Comercial
 									</NavLink>
 								</li>
 								{user?.is_admin && (
