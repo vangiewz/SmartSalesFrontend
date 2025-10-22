@@ -1,5 +1,5 @@
 // src/pages/ReportesIA.tsx
-import "../lib/client"; // ✅ asegura que el client (baseURL, interceptors) esté inicializado
+import "../lib/client"; // ✅ inicializa baseURL e interceptores
 
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -8,7 +8,11 @@ import ProtectedLayout from "../components/ProtectedLayout";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import { useAdminCheck } from "../hooks/useAdminCheck";
 
-import { runAIReport, downloadAIReportBlob, type AIReportResponse } from "../services/aiReports";
+import {
+  runAIReport,
+  downloadAIReportBlob,
+  type AIReportResponse,
+} from "../services/aiReports";
 import PromptBar from "../components/reports/PromptBar";
 import ResultTable from "../components/reports/ResultTable";
 import { exportPdf, buildFilename } from "../utils/reportPdf";
@@ -17,7 +21,7 @@ export default function ReportesIAPage() {
   const { isAdmin, isLoading: adminLoading } = useAdminCheck();
 
   const [loading, setLoading] = useState(false);
-  const [report, setReport] = useState<AIReportResponse|null>(null);
+  const [report, setReport] = useState<AIReportResponse | null>(null);
   const [lastPrompt, setLastPrompt] = useState("");
 
   const handleRun = async (prompt: string) => {
@@ -26,35 +30,47 @@ export default function ReportesIAPage() {
       const data = await runAIReport(prompt);
       setReport(data);
       setLastPrompt(prompt);
-    } catch (e:any) {
-      toast.error(e.message || "Error");
+    } catch (e: any) {
+      toast.error(e?.message || "Error");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDownload = async (format: "csv"|"xlsx"|"pdf") => {
+  const handleDownload = async (format: "csv" | "xlsx" | "pdf") => {
     if (!lastPrompt) {
       toast.error("Primero genera un reporte.");
       return;
     }
+
     try {
       if (format === "pdf") {
-        const data = report ?? await runAIReport(lastPrompt);
+        // Si no hay reporte en memoria, lo generamos para exportarlo
+        const data = report ?? (await runAIReport(lastPrompt));
         if (!report) setReport(data);
         exportPdf(data);
         return;
       }
+
+      // Descarga CSV/XLSX
       const blob = await downloadAIReportBlob(lastPrompt, format);
+
+      // Asegurar datos mínimos para el nombre del archivo
+      const nameData: { intent?: string; start?: string; end?: string } = {
+        intent: report?.intent ?? lastPrompt,
+        start: report?.start ?? "",
+        end: report?.end ?? "",
+      };
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = buildFilename(report, format);
+      a.download = buildFilename(nameData as any, format); // nameData cumple lo necesario
       a.click();
       URL.revokeObjectURL(url);
       toast.success(`Descargado ${format.toUpperCase()}`);
-    } catch (e:any) {
-      toast.error(e.message || "Error");
+    } catch (e: any) {
+      toast.error(e?.message || "Error");
     }
   };
 
@@ -83,13 +99,19 @@ export default function ReportesIAPage() {
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
                 Reportes con IA
               </h1>
-              <p className="text-gray-700 text-sm">Genera reportes por prompt y descárgalos en Excel / PDF</p>
+              <p className="text-gray-700 text-sm">
+                Genera reportes por prompt y descárgalos en Excel / PDF
+              </p>
             </div>
           </div>
         </div>
 
         {/* Prompt */}
-        <PromptBar loading={loading} onRun={handleRun} onDownload={handleDownload} />
+        <PromptBar
+          loading={loading}
+          onRun={handleRun}
+          onDownload={handleDownload}
+        />
 
         {/* Resultados */}
         <div className="mt-6">
@@ -101,10 +123,17 @@ export default function ReportesIAPage() {
             <ResultTable
               columns={report.columns}
               rows={report.rows}
-              meta={{ intent: report.intent, start: report.start, end: report.end, filters: report.filters }}
+              meta={{
+                intent: report.intent ?? "",
+                start: report.start ?? "",
+                end: report.end ?? "",
+                filters: report.filters ?? {},
+              }}
             />
           ) : (
-            <div className="text-gray-500 text-center py-10">Genera un reporte para ver resultados…</div>
+            <div className="text-gray-500 text-center py-10">
+              Genera un reporte para ver resultados…
+            </div>
           )}
         </div>
       </div>

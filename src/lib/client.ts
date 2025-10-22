@@ -16,13 +16,21 @@ export const api = axios.create({
 // ⬇️ INYECTAR TOKEN EN CADA REQUEST (excepto login/register/password-reset)
 api.interceptors.request.use((config) => {
   const url = String(config.url || "");
-  const isPublic = url.startsWith("login/") || 
-                   url.startsWith("register/") || 
-                   url.startsWith("password-reset/");
+  const isPublic =
+    url.startsWith("login/") ||
+    url.startsWith("register/") ||
+    url.startsWith("password-reset/");
+
   if (!isPublic) {
-    const token = localStorage.getItem("access_token");
+    // 👇 Protege el acceso en entorno de servidor (Vercel build o SSR)
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("access_token")
+        : null;
+
     if (token) config.headers.Authorization = `Bearer ${token}`;
   }
+
   return config;
 });
 
