@@ -3,13 +3,18 @@ import ProtectedRoute from './components/ProtectedRoute'
 import HomePage from './pages/Home.tsx'
 import LoginPage from './pages/Login.tsx'
 import RegisterPage from './pages/Register.tsx'
-import DashboardPage from './pages/Dashboard.tsx'
+import InicioPage from './pages/Inicio.tsx'
 import ForgotPasswordPage from './pages/ForgotPassword.tsx'
 import ResetPasswordPage from './pages/ResetPassword.tsx'
 import AccesosCuentasPage from './pages/AccesosCuentas.tsx'
 import GestionUsuariosPage from './pages/GestionUsuarios.tsx'
+
+// Ambos cambios conservados
 import Reportes from './pages/Reportes.tsx'
 import ReportesIA from './pages/ReportesIA.tsx'
+import GestionComercialPage from './pages/GestionComercial.tsx'
+import GestionProductosPage from './pages/GestionProductos.tsx'
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -19,31 +24,36 @@ export default function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route 
-          path="/dashboard" 
+
+        <Route
+          path="/inicio"
           element={
             <ProtectedRoute>
-              <DashboardPage />
+              <InicioPage />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/accesos-cuentas" 
+
+        <Route
+          path="/accesos-cuentas"
           element={
             <ProtectedRoute>
               <AccesosCuentasPage />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/gestion-usuarios" 
+
+        <Route
+          path="/gestion-usuarios"
           element={
             <ProtectedRoute>
               <GestionUsuariosPage />
             </ProtectedRoute>
-          } 
+          }
         />
-          <Route
+
+        {/* Rutas de reportes (rama reportesIA) */}
+        <Route
           path="/reportes"
           element={
             <ProtectedRoute>
@@ -51,8 +61,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-
-          <Route
+        <Route
           path="/generar-reporte"
           element={
             <ProtectedRoute>
@@ -61,6 +70,23 @@ export default function App() {
           }
         />
 
+        {/* Rutas comerciales (rama main) */}
+        <Route
+          path="/gestion-comercial"
+          element={
+            <ProtectedRoute>
+              <GestionComercialPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/gestion-productos"
+          element={
+            <ProtectedRoute>
+              <GestionProductosPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   )

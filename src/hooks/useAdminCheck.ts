@@ -24,7 +24,7 @@ export function useAdminCheck() {
         
         if (!rolesData.is_admin) {
           toast.error('No tienes permisos de administrador')
-          navigate('/dashboard')
+          navigate('/inicio')
           return
         }
         
@@ -32,7 +32,7 @@ export function useAdminCheck() {
       } catch (error) {
         console.error('Error al verificar permisos:', error)
         toast.error('Error al verificar permisos')
-        navigate('/dashboard')
+        navigate('/inicio')
       } finally {
         setIsLoading(false)
       }

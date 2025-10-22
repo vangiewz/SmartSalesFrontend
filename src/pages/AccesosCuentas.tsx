@@ -51,7 +51,7 @@ export default function AccesosCuentasPage() {
             className="group bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl border-2 border-purple-200 p-4 sm:p-6 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200"
           >
             <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
+              <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
                 <Users className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
               <h2 className="text-lg sm:text-xl font-bold text-purple-900 flex-1 min-w-0">
