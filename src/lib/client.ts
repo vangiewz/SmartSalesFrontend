@@ -10,7 +10,7 @@ const BASE_URLS = {
 
 export const api = axios.create({
   baseURL: USE_PROD ? BASE_URLS.prod : BASE_URLS.local,
-  withCredentials: false, // no usamos cookies; tokens por header
+  withCredentials: true, // no usamos cookies; tokens por header
 });
 
 // ⬇️ INYECTAR TOKEN EN CADA REQUEST (excepto login/register/password-reset)
