@@ -114,3 +114,5 @@ export function getApiError(error: unknown): string {
     'Error desconocido'
   )
 }
+
+
