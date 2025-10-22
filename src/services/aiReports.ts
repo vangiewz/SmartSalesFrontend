@@ -1,61 +1,25 @@
-// services/aiReports.ts
-// API PARA REPORTES IA (no toca services/api.ts)
+// src/services/aiReports.ts
+import { api } from '../lib/client'
 
 export type AIReportResponse = {
-  intent: string;
-  rows: Record<string, any>[];
   columns: string[];
-  start: string;
-  end: string;
-  filters: Record<string, any>;
+  rows: (string | number | null)[][];
+  intent: string;
+  start?: string;
+  end?: string;
+  filters?: Record<string, any>;
 };
 
-const BASE = "/api/ai-reports";
-
-/**
- * Verifica que la respuesta HTTP sea válida (status 200–299)
- * y lanza un Error con el texto devuelto en caso contrario.
- */
-async function handle(res: Response): Promise<Response> {
-  if (!res.ok) {
-    let text = "";
-    try {
-      text = await res.text();
-    } catch {
-      text = "Error desconocido al leer la respuesta del servidor.";
-    }
-    throw new Error(text || `HTTP ${res.status}`);
-  }
-  return res;
+export async function runAIReport(prompt: string) {
+  const { data } = await api.post("ai-reports/run", { prompt }); // ← sin '/'
+  return data;
 }
 
-/**
- * Genera el reporte en formato JSON para mostrarlo en la interfaz.
- */
-export async function runAIReport(prompt: string): Promise<AIReportResponse> {
-  const res = await fetch(`${BASE}/run`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt, formato: "json" }),
-  });
-
-  await handle(res);
-  return res.json();
-}
-
-/**
- * Descarga el reporte en formato CSV o XLSX.
- */
-export async function downloadAIReportBlob(
-  prompt: string,
-  formato: "csv" | "xlsx"
-): Promise<Blob> {
-  const res = await fetch(`${BASE}/run`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt, formato }),
-  });
-
-  await handle(res);
-  return res.blob();
+export async function downloadAIReportBlob(prompt: string, format: "csv"|"xlsx"|"pdf") {
+  const { data } = await api.post(
+    "ai-reports/download",          // ← sin '/'
+    { prompt, format },
+    { responseType: "blob" }
+  );
+  return data as Blob;
 }
