@@ -8,7 +8,8 @@ import ForgotPasswordPage from './pages/ForgotPassword.tsx'
 import ResetPasswordPage from './pages/ResetPassword.tsx'
 import AccesosCuentasPage from './pages/AccesosCuentas.tsx'
 import GestionUsuariosPage from './pages/GestionUsuarios.tsx'
-
+import Reportes from './pages/Reportes.tsx'
+import ReportesIA from './pages/ReportesIA.tsx'
 export default function App() {
   return (
     <BrowserRouter>
@@ -42,6 +43,24 @@ export default function App() {
             </ProtectedRoute>
           } 
         />
+          <Route
+          path="/reportes"
+          element={
+            <ProtectedRoute>
+              <Reportes />
+            </ProtectedRoute>
+          }
+        />
+
+          <Route
+          path="/generar-reporte"
+          element={
+            <ProtectedRoute>
+              <ReportesIA />
+            </ProtectedRoute>
+          }
+        />
+
       </Routes>
     </BrowserRouter>
   )
