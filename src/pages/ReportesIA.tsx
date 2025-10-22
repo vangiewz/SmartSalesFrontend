@@ -1,3 +1,6 @@
+// src/pages/ReportesIA.tsx
+import "../lib/client"; // ✅ asegura que el client (baseURL, interceptors) esté inicializado
+
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { BarChart3 } from "lucide-react";
