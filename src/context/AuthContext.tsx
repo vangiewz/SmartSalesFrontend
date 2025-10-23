@@ -1,6 +1,5 @@
-// src/context/AuthContext.tsx
 import { createContext, useState, useEffect, type ReactNode } from "react";
-import { apiLogin, apiRegister, apiLogout } from "../lib/auth";
+import { apiLogin, apiRegister, apiLogout, apiMe } from "../lib/auth";
 import type { AuthUser } from "../lib/client";
 import { getMyRoles } from "../services/api";
 
@@ -19,32 +18,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Persistir sesión: revisar token y cargar usuario al montar
   useEffect(() => {
-    setIsLoading(false);
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      // Si hay token, intenta cargar el usuario actual
+      apiMe()
+        .then(async (u) => {
+          // cargar roles también si lo necesitas
+          try {
+            const rolesData = await getMyRoles();
+            setUser({ ...u, ...rolesData });
+          } catch {
+            setUser(u);
+          }
+        })
+        .catch(() => {
+          setUser(null);
+          apiLogout();
+        })
+        .finally(() => setIsLoading(false));
+    } else {
+      setUser(null);
+      setIsLoading(false);
+    }
   }, []);
 
   const register = async (payload: { email: string; password: string; nombre: string; telefono?: string }) => {
     const { user } = await apiRegister(payload);
-    
-    // Cargar roles del usuario
     try {
       const rolesData = await getMyRoles();
       setUser({ ...user, ...rolesData });
     } catch {
-      // Si falla la carga de roles, aún establecemos el usuario sin roles
       setUser(user);
     }
   };
 
   const login = async (email: string, password: string) => {
     const { user } = await apiLogin(email, password);
-    
-    // Cargar roles del usuario
     try {
       const rolesData = await getMyRoles();
       setUser({ ...user, ...rolesData });
     } catch {
-      // Si falla la carga de roles, aún establecemos el usuario sin roles
       setUser(user);
     }
   };
