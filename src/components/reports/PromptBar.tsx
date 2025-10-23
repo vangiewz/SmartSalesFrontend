@@ -33,9 +33,7 @@ export default function PromptBar({ loading, onRun, onDownload }: Props) {
           <button onClick={() => onDownload("xlsx")} disabled={loading||!prompt.trim()} className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border hover:bg-gray-50">
             <Download className="w-4 h-4" /> Excel
           </button>
-          <button onClick={() => onDownload("csv")} disabled={loading||!prompt.trim()} className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border hover:bg-gray-50">
-            <Download className="w-4 h-4" /> CSV
-          </button>
+
           <button onClick={() => onDownload("pdf")} disabled={loading||!prompt.trim()} className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border hover:bg-gray-50">
             <Download className="w-4 h-4" /> PDF
           </button>
