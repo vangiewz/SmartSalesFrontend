@@ -5,7 +5,8 @@ import toast from "react-hot-toast";
 import { BarChart3, Sparkles, Mic, Square } from "lucide-react";
 import ProtectedLayout from "../components/ProtectedLayout";
 import LoadingSpinner from "../components/common/LoadingSpinner";
-import { useAdminCheck } from "../hooks/useAdminCheck";
+import PlantillasManager from "../components/reports/PlantillasManager";
+import { useAllowedRoles } from "../hooks/useAllowedRoles";
 
 import {
   runAIReport,
@@ -193,7 +194,8 @@ function useVoiceToText(options?: { lang?: string; onResult?: (text: string) => 
 }
 
 export default function ReportesIAPage() {
-  const { isAdmin, isLoading: adminLoading } = useAdminCheck();
+  // IMPORTANTE: usar alias para no chocar con tu estado 'loading' del reporte
+  const { isAllowed, loading: rolesLoading } = useAllowedRoles(["admin", "vendedor", "analista"]);
 
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<AIReportResponse | null>(null);
@@ -292,7 +294,8 @@ export default function ReportesIAPage() {
     },
   });
 
-  if (adminLoading) {
+  // Gate de acceso por roles
+  if (rolesLoading) {
     return (
       <ProtectedLayout>
         <div className="min-h-[calc(100vh-200px)] flex items-center justify-center">
@@ -302,7 +305,7 @@ export default function ReportesIAPage() {
     );
   }
 
-  if (!isAdmin) return null;
+  if (!isAllowed) return null;
 
   return (
     <ProtectedLayout>
@@ -350,7 +353,7 @@ export default function ReportesIAPage() {
         .listening-dot {
           width: 10px; height: 10px; border-radius: 50%;
           background: #ef4444; /* red-500 */
-          animation: pulse .9s infinite alternate;
+          animation: pulse .9s infinite alternate.
         }
         @keyframes pulse {
           from { transform: scale(0.9); opacity: .7; }
@@ -450,6 +453,14 @@ export default function ReportesIAPage() {
             ))}
           </div>
         </div>
+
+        <PlantillasManager
+          currentPrompt={promptValue}
+          onApplyTemplate={(prompt) => {
+            setPromptValue(prompt);
+            handleRun(prompt);
+          }}
+        />
 
         {/* Resultados */}
         <div className="mt-8">

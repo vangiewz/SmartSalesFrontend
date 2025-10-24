@@ -1,4 +1,3 @@
-// src/services/aiReports.ts
 import { api } from "../lib/client";
 
 export type AIReportResponse = {
@@ -10,8 +9,46 @@ export type AIReportResponse = {
   filters?: Record<string, any>;
 };
 
-// --- Helpers ---------------------------------------------------------------
+// ================== PLANTILLAS ===================
+export type PlantillaReporte = {
+  id: number;
+  nombre: string;
+  prompt: string;
+  formato?: "pdf" | "xlsx" | "csv" | null;
+  filtros?: Record<string, any> | null;
+  creado_en?: string;
+  actualizado_en?: string;
+};
 
+// Lista todas las plantillas del usuario autenticado
+export async function fetchPlantillas(): Promise<PlantillaReporte[]> {
+  const res = await api.get("/ai-reports/plantillas/");
+  return res.data as PlantillaReporte[];
+}
+
+// Crea una nueva plantilla
+export async function createPlantilla(data: {
+  nombre: string;
+  prompt: string;
+  formato?: "pdf" | "xlsx" | "csv" | null;
+  filtros?: Record<string, any> | null;
+}): Promise<PlantillaReporte> {
+  const res = await api.post("/ai-reports/plantillas/", data);
+  return res.data as PlantillaReporte;
+}
+
+// Elimina una plantilla por ID
+export async function deletePlantilla(id: number): Promise<void> {
+  await api.delete(`/ai-reports/plantillas/${id}/`);
+}
+
+// Edita una plantilla
+export async function updatePlantilla(id: number, data: Partial<PlantillaReporte>): Promise<PlantillaReporte> {
+  const res = await api.put(`/ai-reports/plantillas/${id}/`, data);
+  return res.data as PlantillaReporte;
+}
+
+// ================== REPORTES IA ===================
 
 /** Asegura shape {columns:string[], rows:[][]} a partir del JSON que venga. */
 function normalize(json: any): AIReportResponse {
