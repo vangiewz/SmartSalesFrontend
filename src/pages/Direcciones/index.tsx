@@ -20,7 +20,15 @@ export default function DireccionesPage() {
       setDirecciones(data);
     } catch (error) {
       console.error('Error al cargar direcciones:', error);
-      toast.error('Error al cargar las direcciones');
+      toast.error('Error al cargar las direcciones', {
+        duration: 4000,
+        style: {
+          borderRadius: '12px',
+          background: '#fff',
+          color: '#374151',
+          border: '2px solid #ef4444',
+        },
+      });
     } finally {
       setLoading(false);
     }
@@ -46,20 +54,24 @@ export default function DireccionesPage() {
         await updateDireccion(selectedDireccion.id, texto);
         toast.success('Dirección actualizada exitosamente', {
           icon: '✏️',
+          duration: 3000,
           style: {
             borderRadius: '12px',
-            background: '#9333ea',
-            color: '#fff',
+            background: '#fff',
+            color: '#374151',
+            border: '2px solid #9333ea',
           },
         });
       } else {
         await createDireccion(texto);
         toast.success('Dirección creada exitosamente', {
           icon: '✅',
+          duration: 3000,
           style: {
             borderRadius: '12px',
-            background: '#9333ea',
-            color: '#fff',
+            background: '#fff',
+            color: '#374151',
+            border: '2px solid #9333ea',
           },
         });
       }
@@ -73,23 +85,77 @@ export default function DireccionesPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('¿Estás seguro de eliminar esta dirección?')) return;
+    // Mostrar toast de confirmación personalizado
+    toast((t) => (
+      <div className="flex flex-col gap-3">
+        <div>
+          <p className="font-bold text-gray-900 mb-1">¿Eliminar dirección?</p>
+          <p className="text-sm text-gray-600">Esta acción no se puede deshacer</p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={async () => {
+              toast.dismiss(t.id);
+              try {
+                // Mostrar toast de carga
+                const loadingToast = toast.loading('Eliminando dirección...', {
+                  style: {
+                    borderRadius: '12px',
+                    background: '#fff',
+                    color: '#374151',
+                  },
+                });
 
-    try {
-      await deleteDireccion(id);
-      toast.success('Dirección eliminada exitosamente', {
-        icon: '🗑️',
-        style: {
-          borderRadius: '12px',
-          background: '#9333ea',
-          color: '#fff',
-        },
-      });
-      fetchDirecciones();
-    } catch (error) {
-      console.error('Error al eliminar dirección:', error);
-      toast.error('Error al eliminar la dirección');
-    }
+                await deleteDireccion(id);
+                
+                toast.dismiss(loadingToast);
+                toast.success('Dirección eliminada exitosamente', {
+                  icon: '🗑️',
+                  duration: 3000,
+                  style: {
+                    borderRadius: '12px',
+                    background: '#fff',
+                    color: '#374151',
+                    border: '2px solid #9333ea',
+                  },
+                });
+                fetchDirecciones();
+              } catch (error) {
+                console.error('Error al eliminar dirección:', error);
+                toast.error('Error al eliminar la dirección', {
+                  duration: 4000,
+                  style: {
+                    borderRadius: '12px',
+                    background: '#fff',
+                    color: '#374151',
+                    border: '2px solid #ef4444',
+                  },
+                });
+              }
+            }}
+            className="flex-1 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all shadow-md"
+          >
+            Eliminar
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="flex-1 bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-300 px-4 py-2 rounded-lg font-semibold transition-all"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    ), {
+      duration: Infinity,
+      style: {
+        borderRadius: '12px',
+        padding: '16px',
+        maxWidth: '400px',
+        background: '#fff',
+        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1), 0 0 0 2px #e9d5ff',
+        border: '2px solid #e9d5ff',
+      },
+    });
   };
 
   const handleCloseModal = () => {
