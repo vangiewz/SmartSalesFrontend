@@ -1,4 +1,5 @@
 import { useAuth } from '../hooks/useAuth';
+import { useCarrito } from '../hooks/useCarrito';
 import { LogOut, User, ShoppingCart, Sparkles, Home, Menu, MapPin, Shield, Package } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -11,6 +12,7 @@ type AuthNavbarProps = {
 
 export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps) {
   const { user, logout } = useAuth();
+  const { cantidadTotal } = useCarrito();
   const navigate = useNavigate();
 
   // Helper: permitir Reportes a admin, vendedor y analista (por flags o nombres en user.roles)
@@ -135,9 +137,11 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                   >
                     <ShoppingCart className="h-6 w-6" />
                     Carrito
-                    <span className="ml-auto bg-pink-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-lg">
-                      0
-                    </span>
+                    {cantidadTotal > 0 && (
+                      <span className="ml-auto bg-pink-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-lg">
+                        {cantidadTotal}
+                      </span>
+                    )}
                   </NavLink>
                 </li>
                 <li>
@@ -291,9 +295,11 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                 >
                   <ShoppingCart className="h-6 w-6" />
                   Carrito
-                  <span className="ml-auto bg-pink-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-lg">
-                    0
-                  </span>
+                  {cantidadTotal > 0 && (
+                    <span className="ml-auto bg-pink-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-lg">
+                      {cantidadTotal}
+                    </span>
+                  )}
                 </NavLink>
               </li>
               <li>
@@ -309,21 +315,6 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                 >
                   <User className="h-6 w-6" />
                   Perfil
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/direcciones"
-                  className={({ isActive }) =>
-                    `flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${
-                      isActive
-                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg scale-105'
-                        : 'text-purple-900 hover:bg-purple-200/40 hover:text-purple-800 hover:scale-105'
-                    }`
-                  }
-                >
-                  <MapPin className="h-6 w-6" />
-                  Direcciones
                 </NavLink>
               </li>
               <li>

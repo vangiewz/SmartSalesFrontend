@@ -2,6 +2,7 @@
 import { ShoppingCart, Sparkles, Package, User } from 'lucide-react'
 import type { ProductoCatalogo } from '../../types/catalogo'
 import { formatearPrecio } from '../../services/catalogoApi'
+import { agregarAlCarrito } from '../../utils/carrito'
 
 interface ProductCardProps {
   producto: ProductoCatalogo
@@ -10,6 +11,15 @@ interface ProductCardProps {
 
 export function ProductCard({ producto, onAddToCart }: ProductCardProps) {
   const isAgotado = producto.stock <= 0
+
+  const handleAddToCart = () => {
+    if (isAgotado) return
+    
+    agregarAlCarrito(producto.id, 1)
+    // Solo llamar a onAddToCart sin mostrar toast aquí
+    // El toast se muestra en el padre (Inicio.tsx)
+    onAddToCart(producto.nombre)
+  }
 
   return (
     <div className="group bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-purple-100">
@@ -80,7 +90,7 @@ export function ProductCard({ producto, onAddToCart }: ProductCardProps) {
             {formatearPrecio(producto.precio)}
           </p>
           <button 
-            onClick={() => onAddToCart(producto.nombre)}
+            onClick={handleAddToCart}
             disabled={isAgotado}
             className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-1.5 sm:p-2 rounded-xl hover:shadow-2xl hover:scale-110 transition-all duration-200 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed flex-shrink-0 group"
           >

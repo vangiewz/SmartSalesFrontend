@@ -1,8 +1,9 @@
 // src/pages/GestionComercial.tsx
 import { Link } from 'react-router-dom'
-import { Package, TrendingUp } from 'lucide-react'
+import { Package, TrendingUp, MapPin } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import ProtectedLayout from '../components/ProtectedLayout'
+import HistorialPagosCard from './GestionComercial/components/HistorialPagosCard'
 
 export default function GestionComercialPage() {
   const { user } = useAuth()
@@ -29,6 +30,31 @@ export default function GestionComercialPage() {
 
         {/* Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {/* Card: Gestionar Direcciones (Visible para todos) */}
+          <Link
+            to="/direcciones"
+            className="group bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl border-2 border-purple-200 p-4 sm:p-6 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200"
+          >
+            <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+              <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
+                <MapPin className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+              </div>
+              <h2 className="text-lg sm:text-xl font-bold text-purple-900 flex-1 min-w-0">
+                Gestionar Direcciones
+              </h2>
+            </div>
+            <p className="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">
+              Administra tus direcciones de envío para realizar compras más rápido.
+            </p>
+            <div className="flex items-center text-purple-600 font-semibold group-hover:gap-3 transition-all text-sm sm:text-base">
+              <span>Ver Direcciones</span>
+              <span className="text-lg sm:text-xl group-hover:translate-x-1 transition-transform">→</span>
+            </div>
+          </Link>
+
+          {/* Card: Historial de Pagos (Visible para todos) */}
+          <HistorialPagosCard />
+
           {/* Card: Gestionar Productos (Solo Admin y Vendedor) */}
           {(user?.is_admin || user?.is_vendedor) && (
             <Link
