@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
+import { StripeProvider } from './components/StripeProvider'
 import HomePage from './pages/Home.tsx'
 import LoginPage from './pages/Login.tsx'
 import RegisterPage from './pages/Register.tsx'
@@ -14,6 +15,12 @@ import Reportes from './pages/Reportes.tsx'
 import ReportesIA from './pages/ReportesIA.tsx'
 import GestionComercialPage from './pages/GestionComercial.tsx'
 import GestionProductosPage from './pages/GestionProductos.tsx'
+
+// Nuevas páginas de e-commerce
+import DireccionesPage from './pages/Direcciones'
+import CarritoPage from './pages/Carrito'
+import CheckoutPage from './pages/Checkout'
+import CompraExitosaPage from './pages/CompraExitosa'
 
 export default function App() {
   return (
@@ -84,6 +91,42 @@ export default function App() {
           element={
             <ProtectedRoute>
               <GestionProductosPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Rutas de e-commerce */}
+        <Route
+          path="/direcciones"
+          element={
+            <ProtectedRoute>
+              <DireccionesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/carrito"
+          element={
+            <ProtectedRoute>
+              <CarritoPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute>
+              <StripeProvider>
+                <CheckoutPage />
+              </StripeProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/compra-exitosa"
+          element={
+            <ProtectedRoute>
+              <CompraExitosaPage />
             </ProtectedRoute>
           }
         />
