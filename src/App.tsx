@@ -21,6 +21,7 @@ import DireccionesPage from './pages/Direcciones'
 import CarritoPage from './pages/Carrito'
 import CheckoutPage from './pages/Checkout'
 import CompraExitosaPage from './pages/CompraExitosa'
+import GestionCliente from './pages/GestionClientes'
 
 export default function App() {
   return (
@@ -129,7 +130,17 @@ export default function App() {
               <CompraExitosaPage />
             </ProtectedRoute>
           }
+
         />
+
+          <Route
+          path="/gestioncliente"
+          element={
+            <ProtectedRoute>
+              <GestionCliente />
+            </ProtectedRoute>
+          }
+          />
       </Routes>
     </BrowserRouter>
   )
