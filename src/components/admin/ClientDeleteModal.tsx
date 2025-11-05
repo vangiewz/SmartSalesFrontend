@@ -1,14 +1,16 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import type { Client } from '../../services/clientApi'
 import LoadingSpinner from '../common/LoadingSpinner'
 
 type Props = {
-  client: Client
+  client: Client | null | undefined
   onClose: () => void
   onConfirm: (clientId: string) => Promise<void>
 }
 
 export default function ClientDeleteModal({ client, onClose, onConfirm }: Props) {
+  if (!client) return null
+
   const [loading, setLoading] = useState(false)
 
   const handleConfirm = async () => {
@@ -17,7 +19,7 @@ export default function ClientDeleteModal({ client, onClose, onConfirm }: Props)
       await onConfirm(client.id)
       onClose()
     } catch (err) {
-      // page-level will show error toast; keep modal open
+      // el page-level mostrará toast; aquí solo logueamos
       // eslint-disable-next-line no-console
       console.error('Error deleting client', err)
     } finally {

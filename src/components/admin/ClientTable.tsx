@@ -1,4 +1,3 @@
-import React from 'react'
 import type { Client } from '../../services/clientApi'
 import { Edit3, Trash2 } from 'lucide-react'
 
@@ -32,32 +31,41 @@ export default function ClientTable({ clients, currentUserId, onEdit, onDelete }
                 </td>
               </tr>
             ) : (
-              list.map((c) => (
-                <tr key={c.id}>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{c.nombre}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{c.correo ?? '—'}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{c.telefono ?? '—'}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                    <button
-                      onClick={() => onEdit(c)}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-sm"
-                      title="Editar cliente"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                      Editar
-                    </button>
+              list.map((c) => {
+                const isCurrentUser = Boolean(currentUserId && currentUserId === c.id)
+                return (
+                  <tr key={c.id}>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{c.nombre}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{c.correo ?? '—'}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{c.telefono ?? '—'}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                      <button
+                        onClick={() => onEdit(c)}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-sm"
+                        title="Editar cliente"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                        Editar
+                      </button>
 
-                    <button
-                      onClick={() => onDelete(c)}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm"
-                      title="Eliminar cliente"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))
+                      <button
+                        onClick={() => onDelete(c)}
+                        disabled={isCurrentUser}
+                        aria-disabled={isCurrentUser}
+                        title={isCurrentUser ? "No podés eliminar tu propia cuenta" : "Eliminar cliente"}
+                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm ${
+                          isCurrentUser
+                            ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                            : 'bg-red-600 hover:bg-red-700 text-white'
+                        }`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })
             )}
           </tbody>
         </table>
