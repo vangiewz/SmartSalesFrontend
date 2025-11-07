@@ -54,6 +54,30 @@ export default function GestionComercialPage() {
           {/* Card: Historial de Pagos (Visible para todos) */}
           <HistorialPagosCard />
 
+          {/* Card: Histórico de Ventas (Solo Admin y Analista) */}
+          {(user?.is_admin || user?.is_analista) && (
+            <Link
+              to="/historico-ventas"
+              className="group bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl border-2 border-indigo-200 p-4 sm:p-6 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200"
+            >
+              <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                <div className="bg-gradient-to-br from-indigo-500 to-blue-600 p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
+                  <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold text-indigo-900 flex-1 min-w-0">
+                  Histórico de Ventas
+                </h2>
+              </div>
+              <p className="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">
+                Analiza ventas históricas por período, producto y cliente con métricas clave.
+              </p>
+              <div className="flex items-center text-indigo-600 font-semibold group-hover:gap-3 transition-all text-sm sm:text-base">
+                <span>Ver histórico</span>
+                <span className="text-lg sm:text-xl group-hover:translate-x-1 transition-transform">→</span>
+              </div>
+            </Link>
+          )}
+
           {/* Card: Gestionar Productos (Solo Admin y Vendedor) */}
           {(user?.is_admin || user?.is_vendedor) && (
             <Link
@@ -116,14 +140,14 @@ export default function GestionComercialPage() {
           </div>
         </div>
 
-        {/* Mensaje si no tiene permisos */}
-        {!user?.is_admin && !user?.is_vendedor && (
+        {/* Mensaje si no tiene permisos comerciales */}
+        {!user?.is_admin && !user?.is_vendedor && !user?.is_analista && (
           <div className="mt-8 bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-6 text-center">
             <p className="text-yellow-800 font-semibold mb-2">
               ⚠️ No tienes acceso a módulos comerciales
             </p>
             <p className="text-yellow-700 text-sm">
-              Contacta al administrador para obtener permisos de Vendedor o Administrador
+              Contacta al administrador para obtener permisos de Vendedor, Analista o Administrador.
             </p>
           </div>
         )}
