@@ -13,6 +13,8 @@ export const api = axios.create({
   withCredentials: false, // no usamos cookies; tokens por header
 });
 
+console.log('🌐 API Base URL:', USE_PROD ? BASE_URLS.prod : BASE_URLS.local);
+
 // ⬇️ INYECTAR TOKEN EN CADA REQUEST (excepto login/register/password-reset)
 api.interceptors.request.use((config) => {
   const url = String(config.url || "");

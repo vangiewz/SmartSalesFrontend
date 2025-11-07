@@ -7,10 +7,10 @@ import {
   Sparkles,
   Home,
   Menu,
-  MapPin,
   Shield,
   Package,
-  Brain, // 👈 NUEVO
+  Brain,
+  ShieldCheck, // 👈 NUEVO para Garantías
 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -154,38 +154,6 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
 
                 <li>
                   <NavLink
-                    to="/perfil"
-                    className={({ isActive }) =>
-                      `flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${
-                        isActive
-                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg scale-105'
-                          : 'text-purple-900 hover:bg-purple-200/40 hover:text-purple-800 hover:scale-105'
-                      }`
-                    }
-                  >
-                    <User className="h-6 w-6" />
-                    Perfil
-                  </NavLink>
-                </li>
-
-                <li>
-                  <NavLink
-                    to="/direcciones"
-                    className={({ isActive }) =>
-                      `flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${
-                        isActive
-                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg scale-105'
-                          : 'text-purple-900 hover:bg-purple-200/40 hover:text-purple-800 hover:scale-105'
-                      }`
-                    }
-                  >
-                    <MapPin className="h-6 w-6" />
-                    Direcciones
-                  </NavLink>
-                </li>
-
-                <li>
-                  <NavLink
                     to="/gestion-comercial"
                     className={({ isActive }) =>
                       `flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${
@@ -197,6 +165,22 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                   >
                     <Package className="h-6 w-6" />
                     Gestión Comercial
+                  </NavLink>
+                </li>
+
+                <li>
+                  <NavLink
+                    to="/garantia"
+                    className={({ isActive }) =>
+                      `flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${
+                        isActive
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg scale-105'
+                          : 'text-purple-900 hover:bg-purple-200/40 hover:text-purple-800 hover:scale-105'
+                      }`
+                    }
+                  >
+                    <ShieldCheck className="h-6 w-6" />
+                    Gestión de garantías
                   </NavLink>
                 </li>
 
@@ -336,38 +320,6 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
 
               <li>
                 <NavLink
-                  to="/perfil"
-                  className={({ isActive }) =>
-                    `flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${
-                      isActive
-                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg scale-105'
-                        : 'text-purple-900 hover:bg-purple-200/40 hover:text-purple-800 hover:scale-105'
-                    }`
-                  }
-                >
-                  <User className="h-6 w-6" />
-                  Perfil
-                </NavLink>
-              </li>
-
-              <li>
-                <NavLink
-                  to="/direcciones"
-                  className={({ isActive }) =>
-                    `flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${
-                      isActive
-                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg scale-105'
-                        : 'text-purple-900 hover:bg-purple-200/40 hover:text-purple-800 hover:scale-105'
-                    }`
-                  }
-                >
-                  <MapPin className="h-6 w-6" />
-                  Direcciones
-                </NavLink>
-              </li>
-
-              <li>
-                <NavLink
                   to="/gestion-comercial"
                   className={({ isActive }) =>
                     `flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${
@@ -379,6 +331,22 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                 >
                   <Package className="h-6 w-6" />
                   Gestión Comercial
+                </NavLink>
+              </li>
+
+              <li>
+                <NavLink
+                  to="/garantia"
+                  className={({ isActive }) =>
+                    `flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${
+                      isActive
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg scale-105'
+                        : 'text-purple-900 hover:bg-purple-200/40 hover:text-purple-800 hover:scale-105'
+                    }`
+                  }
+                >
+                  <ShieldCheck className="h-6 w-6" />
+                  Gestión de garantías
                 </NavLink>
               </li>
 
