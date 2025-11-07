@@ -25,7 +25,7 @@ import GestionCliente from './pages/GestionClientes'
 import HistoricoVentas from './pages/HistoricoVentas'
 import ModeloPrediccion from './pages/ConfigModeloPrediccion'
 import IAdashboard from './pages/DashboardInteligenciaArtificialPage'
-import PrediccionesVentasPage from './pages/PrediccionesVentaPage';
+
 
 export default function App() {
   return (
@@ -54,15 +54,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-
-          <Route
-          path="/predicciones-venta"
-          element={
-            <ProtectedRoute>
-              <PrediccionesVentasPage />
-            </ProtectedRoute>
-          }
-        />
+          
 
 
         <Route
