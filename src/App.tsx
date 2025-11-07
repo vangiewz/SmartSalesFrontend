@@ -26,6 +26,14 @@ import HistoricoVentas from './pages/HistoricoVentas'
 import ModeloPrediccion from './pages/ConfigModeloPrediccion'
 import IAdashboard from './pages/DashboardInteligenciaArtificialPage'
 
+// Páginas de garantías
+import GarantiaPage from './pages/garantia'
+import MisGarantiasPage from './pages/garantia/mis'
+import ReclamarGarantiaPage from './pages/garantia/reclamar'
+import GestionarGarantiasPage from './pages/garantia/gestionar'
+import DetalleClienteGarantiaPage from './pages/garantia/detalle-cliente'
+import DetalleTecnicoGarantiaPage from './pages/garantia/detalle-tecnico'
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -172,6 +180,58 @@ export default function App() {
             </ProtectedRoute>
           }
           />
+
+        {/* Rutas de garantías */}
+        <Route
+          path="/garantia"
+          element={
+            <ProtectedRoute>
+              <GarantiaPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/garantia/mis"
+          element={
+            <ProtectedRoute>
+              <MisGarantiasPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/garantia/reclamar"
+          element={
+            <ProtectedRoute>
+              <ReclamarGarantiaPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/garantia/gestionar"
+          element={
+            <ProtectedRoute>
+              <GestionarGarantiasPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Detalle de garantía para clientes */}
+        <Route
+          path="/garantia/detalle-cliente/:venta_id/:producto_id/:garantia_id"
+          element={
+            <ProtectedRoute>
+              <DetalleClienteGarantiaPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Detalle de garantía para técnicos (con botones de evaluación) */}
+        <Route
+          path="/garantia/detalle-tecnico/:venta_id/:producto_id/:garantia_id"
+          element={
+            <ProtectedRoute>
+              <DetalleTecnicoGarantiaPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   )

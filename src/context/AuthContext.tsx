@@ -56,10 +56,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const { user } = await apiLogin(email, password);
+    console.log('🔐 Login - Usuario básico:', user);
     try {
       const rolesData = await getMyRoles();
-      setUser({ ...user, ...rolesData });
-    } catch {
+      console.log('🔐 Login - Roles obtenidos:', rolesData);
+      const fullUser = { ...user, ...rolesData };
+      console.log('🔐 Login - Usuario completo:', fullUser);
+      setUser(fullUser);
+    } catch (error) {
+      console.error('❌ Error al obtener roles:', error);
       setUser(user);
     }
   };
