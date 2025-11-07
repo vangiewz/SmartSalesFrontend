@@ -330,11 +330,11 @@ export default function GestionarGarantiasPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Fecha reclamo:</span>
-                      <span className="font-semibold text-gray-900">{formatFecha(g.fecha_solicitud || g.hora)}</span>
+                      <span className="font-semibold text-gray-900">{formatFecha(g.fecha_solicitud || g.hora || null)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Límite garantía:</span>
-                      <span className="font-semibold text-gray-900">{formatFecha(g.limite_garantia || g.limitegarantia)}</span>
+                      <span className="font-semibold text-gray-900">{formatFecha(g.limite_garantia || g.limitegarantia || null)}</span>
                     </div>
                   </div>
 
