@@ -23,6 +23,8 @@ import CheckoutPage from './pages/Checkout'
 import CompraExitosaPage from './pages/CompraExitosa'
 import GestionCliente from './pages/GestionClientes'
 import HistoricoVentas from './pages/HistoricoVentas'
+import ModeloPrediccion from './pages/ConfigModeloPrediccion'
+import IAdashboard from './pages/DashboardInteligenciaArtificialPage'
 
 export default function App() {
   return (
@@ -42,6 +44,16 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
+          <Route
+          path="/IADashboard"
+          element={
+            <ProtectedRoute>
+              <IAdashboard />
+            </ProtectedRoute>
+          }
+        />
+
 
         <Route
           path="/accesos-cuentas"
@@ -66,6 +78,15 @@ export default function App() {
           element={
             <ProtectedRoute>
               <HistoricoVentas />
+            </ProtectedRoute>
+          }
+        />
+
+           <Route
+          path="/config-modelo"
+          element={
+            <ProtectedRoute>
+              <ModeloPrediccion />
             </ProtectedRoute>
           }
         />

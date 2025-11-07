@@ -1,6 +1,17 @@
 import { useAuth } from '../hooks/useAuth';
 import { useCarrito } from '../hooks/useCarrito';
-import { LogOut, User, ShoppingCart, Sparkles, Home, Menu, MapPin, Shield, Package } from 'lucide-react';
+import {
+  LogOut,
+  User,
+  ShoppingCart,
+  Sparkles,
+  Home,
+  Menu,
+  MapPin,
+  Shield,
+  Package,
+  Brain, // 👈 NUEVO
+} from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -34,6 +45,7 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
   };
 
   const canSeeReportes = hasAnyRole(['admin', 'vendedor', 'analista']);
+  const canSeeIA = hasAnyRole(['admin', 'analista']); // 👈 NUEVO: solo admin y analista
 
   // Paleta y glassmorphism
   const sidebarBase =
@@ -44,20 +56,12 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
       await logout();
       toast.success('Sesión cerrada exitosamente', {
         icon: '👋',
-        style: {
-          borderRadius: '12px',
-          background: '#9333ea',
-          color: '#fff',
-        },
+        style: { borderRadius: '12px', background: '#9333ea', color: '#fff' },
       });
       navigate('/');
     } catch {
       toast.error('Error al cerrar sesión', {
-        style: {
-          borderRadius: '12px',
-          background: '#ef4444',
-          color: '#fff',
-        },
+        style: { borderRadius: '12px', background: '#ef4444', color: '#fff' },
       });
     }
   };
@@ -76,7 +80,7 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
         </button>
       )}
 
-      {/* Sidebar móvil: panel fijo que cubre toda la pantalla */}
+      {/* Sidebar móvil */}
       {!isDesktop && open && (
         <div className="fixed inset-0 z-[120] flex">
           <aside
@@ -92,6 +96,7 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                 <Menu className="h-6 w-6 rotate-180" />
               </button>
             </div>
+
             {/* Logo y usuario */}
             <div className="flex flex-col items-center py-8 px-4 border-b border-purple-200/20">
               <div className="relative mb-2">
@@ -106,7 +111,8 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                 {user?.nombre || user?.correo || 'Usuario'}
               </span>
             </div>
-            {/* Menú principal */}
+
+            {/* Menú principal (MÓVIL) */}
             <nav className="flex-1 overflow-y-auto py-8 px-4">
               <ul className="space-y-3">
                 <li>
@@ -124,6 +130,7 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                     Inicio
                   </NavLink>
                 </li>
+
                 <li>
                   <NavLink
                     to="/carrito"
@@ -144,6 +151,7 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                     )}
                   </NavLink>
                 </li>
+
                 <li>
                   <NavLink
                     to="/perfil"
@@ -159,6 +167,7 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                     Perfil
                   </NavLink>
                 </li>
+
                 <li>
                   <NavLink
                     to="/direcciones"
@@ -174,6 +183,7 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                     Direcciones
                   </NavLink>
                 </li>
+
                 <li>
                   <NavLink
                     to="/gestion-comercial"
@@ -228,10 +238,28 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                   </li>
                 )}
 
-                {/* Aquí puedes agregar fácilmente más módulos */}
+                {/* ADMIN o ANALISTA: Dashboard IA  */}
+                {canSeeIA && (
+                  <li>
+                    <NavLink
+                      to="/dashboard-ia"
+                      className={({ isActive }) =>
+                        `flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${
+                          isActive
+                            ? 'bg-gradient-to-r from-indigo-600 to-emerald-500 text-white shadow-lg scale-105'
+                            : 'text-purple-900 hover:bg-emerald-200/40 hover:text-emerald-700 hover:scale-105'
+                        }`
+                      }
+                    >
+                      <Brain className="h-6 w-6" />
+                      Dashboard e IA
+                    </NavLink>
+                  </li>
+                )}
               </ul>
             </nav>
-            {/* Logout abajo */}
+
+            {/* Logout */}
             <div className="px-4 py-7 border-t border-purple-200/20">
               <button
                 onClick={handleLogout}
@@ -242,12 +270,13 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
               </button>
             </div>
           </aside>
-          {/* Fondo semitransparente para cerrar el menú tocando fuera */}
+
+          {/* Fondo para cerrar tocando fuera */}
           <div className="flex-1 bg-black/30" onClick={() => setOpen(false)} />
         </div>
       )}
 
-      {/* Sidebar desktop: sticky y espacioso */}
+      {/* Sidebar DESKTOP */}
       {isDesktop && (
         <aside className={sidebarBase} style={{ minWidth: '18rem' }}>
           {/* Logo y usuario */}
@@ -264,7 +293,8 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
               {user?.nombre || user?.correo || 'Usuario'}
             </span>
           </div>
-          {/* Menú principal */}
+
+          {/* Menú principal (DESKTOP) */}
           <nav className="flex-1 overflow-y-auto py-8 px-4">
             <ul className="space-y-3">
               <li>
@@ -282,6 +312,7 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                   Inicio
                 </NavLink>
               </li>
+
               <li>
                 <NavLink
                   to="/carrito"
@@ -302,6 +333,7 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                   )}
                 </NavLink>
               </li>
+
               <li>
                 <NavLink
                   to="/perfil"
@@ -317,6 +349,23 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                   Perfil
                 </NavLink>
               </li>
+
+              <li>
+                <NavLink
+                  to="/direcciones"
+                  className={({ isActive }) =>
+                    `flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${
+                      isActive
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg scale-105'
+                        : 'text-purple-900 hover:bg-purple-200/40 hover:text-purple-800 hover:scale-105'
+                    }`
+                  }
+                >
+                  <MapPin className="h-6 w-6" />
+                  Direcciones
+                </NavLink>
+              </li>
+
               <li>
                 <NavLink
                   to="/gestion-comercial"
@@ -371,10 +420,28 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                 </li>
               )}
 
-              {/* Aquí puedes agregar fácilmente más módulos */}
+              {/* ADMIN o ANALISTA: Dashboard IA */}
+              {canSeeIA && (
+                <li>
+                  <NavLink
+                    to="/iadashboard"
+                    className={({ isActive }) =>
+                      `flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${
+                        isActive
+                          ? 'bg-gradient-to-r from-indigo-600 to-emerald-500 text-white shadow-lg scale-105'
+                          : 'text-purple-900 hover:bg-emerald-200/40 hover:text-emerald-700 hover:scale-105'
+                      }`
+                    }
+                  >
+                    <Brain className="h-6 w-6" />
+                    Dashboard e IA
+                  </NavLink>
+                </li>
+              )}
             </ul>
           </nav>
-          {/* Logout abajo */}
+
+          {/* Logout */}
           <div className="px-4 py-7 border-t border-purple-200/20">
             <button
               onClick={handleLogout}
