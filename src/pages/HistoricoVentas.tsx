@@ -859,7 +859,8 @@ export default function HistoricoVentas() {
                         ? "bg-emerald-600 text-white border-emerald-600"
                         : "bg-white hover:bg-gray-50"
                     }`}
-                    onClick={() => setHorizontePreset(v)}
+                    onClick={() => setHorizontePreset(v as HorizontePreset)}
+
                   >
                     {v}
                   </button>
