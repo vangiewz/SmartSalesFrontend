@@ -26,6 +26,7 @@ import HistoricoVentas from './pages/HistoricoVentas'
 import ModeloPrediccion from './pages/ConfigModeloPrediccion'
 import IAdashboard from './pages/DashboardInteligenciaArtificialPage'
 
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -53,6 +54,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+          
 
 
         <Route
