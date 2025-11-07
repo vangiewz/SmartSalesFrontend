@@ -22,6 +22,7 @@ import CarritoPage from './pages/Carrito'
 import CheckoutPage from './pages/Checkout'
 import CompraExitosaPage from './pages/CompraExitosa'
 import GestionCliente from './pages/GestionClientes'
+import HistoricoVentas from './pages/HistoricoVentas'
 
 export default function App() {
   return (
@@ -56,6 +57,15 @@ export default function App() {
           element={
             <ProtectedRoute>
               <GestionUsuariosPage />
+            </ProtectedRoute>
+          }
+        />
+
+          <Route
+          path="/historico-ventas"
+          element={
+            <ProtectedRoute>
+              <HistoricoVentas />
             </ProtectedRoute>
           }
         />
