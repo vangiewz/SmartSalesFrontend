@@ -18,8 +18,10 @@ import {
 } from "recharts";
 import { BarChart3 } from "lucide-react";
 
-import {
-  fetchHistorico,
+// 👉 valores (runtime)
+import { fetchHistorico } from "../services/ventasHistoricas";
+// 👉 tipos (solo type)
+import type {
   GroupBy,
   Granularity,
   Metric,
@@ -322,9 +324,7 @@ export default function HistoricoVentas() {
                       yAxisId="left"
                       tickFormatter={(v) =>
                         metric === "total" || metric === "ticket_promedio"
-                          ? currency
-                              .format(v)
-                              .replace("BOB ", "Bs ")
+                          ? currency.format(v).replace("BOB ", "Bs ")
                           : numberFmt.format(v)
                       }
                     />
@@ -406,9 +406,7 @@ export default function HistoricoVentas() {
                         <tr key={idx} className="border-t">
                           <td className="px-3 py-2">{label}</td>
                           <td className="px-3 py-2 text-right">
-                            {currency
-                              .format(r.total)
-                              .replace("BOB ", "Bs ")}
+                            {currency.format(r.total).replace("BOB ", "Bs ")}
                           </td>
                           <td className="px-3 py-2 text-right">
                             {numberFmt.format(r.cantidad)}
@@ -480,9 +478,7 @@ export default function HistoricoVentas() {
                     <YAxis
                       tickFormatter={(v) =>
                         metric === "total" || metric === "ticket_promedio"
-                          ? currency
-                              .format(v)
-                              .replace("BOB ", "Bs ")
+                          ? currency.format(v).replace("BOB ", "Bs ")
                           : numberFmt.format(v)
                       }
                     />
@@ -550,17 +546,13 @@ export default function HistoricoVentas() {
                             {groupBy === "producto" ? r.producto : r.cliente}
                           </td>
                           <td className="px-3 py-2 text-right">
-                            {currency
-                              .format(r.total)
-                              .replace("BOB ", "Bs ")}
+                            {currency.format(r.total).replace("BOB ", "Bs ")}
                           </td>
                           <td className="px-3 py-2 text-right">
                             {numberFmt.format(r.cantidad)}
                           </td>
                           <td className="px-3 py-2 text-right">
-                            {currency
-                              .format(ticket)
-                              .replace("BOB ", "Bs ")}
+                            {currency.format(ticket).replace("BOB ", "Bs ")}
                           </td>
                         </tr>
                       );
