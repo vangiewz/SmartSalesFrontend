@@ -7,8 +7,12 @@ import { useAllowedRoles } from "../hooks/useAllowedRoles";
 import {
   fetchModeloConfig,
   updateModeloConfig,
+  trainModeloIA,
 } from "../services/modeloPrediccion";
-import type { ModeloPrediccionConfig } from "../services/modeloPrediccion";
+import type {
+  ModeloPrediccionConfig,
+  TrainModeloResult,
+} from "../services/modeloPrediccion";
 
 export default function ConfigModeloPrediccion() {
   // 🔒 Solo admin y analista
@@ -20,6 +24,10 @@ export default function ConfigModeloPrediccion() {
   const [config, setConfig] = useState<ModeloPrediccionConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // 🔁 Estado para entrenamiento
+  const [training, setTraining] = useState(false);
+  const [lastTrain, setLastTrain] = useState<TrainModeloResult | null>(null);
 
   useEffect(() => {
     if (!isAllowed) {
@@ -115,6 +123,25 @@ export default function ConfigModeloPrediccion() {
     }
   };
 
+  const handleTrain = async () => {
+    setTraining(true);
+    try {
+      toast.loading("Entrenando modelo de predicción…", { id: "train-model" });
+      const result = await trainModeloIA();
+      setLastTrain(result);
+      toast.success("Modelo entrenado correctamente ✅", { id: "train-model" });
+    } catch (err: any) {
+      console.error(err);
+      toast.error(
+        err?.response?.data?.detail ||
+          "Error al entrenar el modelo de predicción",
+        { id: "train-model" }
+      );
+    } finally {
+      setTraining(false);
+    }
+  };
+
   // ⏳ Cargando roles
   if (rolesLoading) {
     return (
@@ -171,16 +198,19 @@ export default function ConfigModeloPrediccion() {
   return (
     <ProtectedLayout>
       <div className="max-w-3xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
+        {/* Título */}
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-emerald-500 bg-clip-text text-transparent">
             Configuración del modelo de predicción
           </h1>
           <p className="text-gray-700 text-sm mt-1">
             Ajusta los parámetros del modelo Random Forest que se utiliza para
-            predecir ventas futuras.
+            predecir ventas futuras y entrena el modelo con los datos
+            históricos.
           </p>
         </div>
 
+        {/* FORMULARIO CONFIGURACIÓN */}
         <form
           onSubmit={handleSubmit}
           className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4"
@@ -351,6 +381,103 @@ export default function ConfigModeloPrediccion() {
             </button>
           </div>
         </form>
+
+        {/* SECCIÓN ENTRENAMIENTO MODELO */}
+        <div className="mt-6 bg-white border border-indigo-100 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg sm:text-xl font-bold text-indigo-900">
+                Entrenar modelo de predicción
+              </h2>
+              <p className="text-gray-600 text-sm mt-1">
+                Entrena el modelo Random Forest usando los datos históricos de ventas
+                y la configuración actual.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={handleTrain}
+              disabled={training}
+              className="px-4 py-2 rounded-md bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {training ? "Entrenando modelo…" : "Entrenar modelo ahora"}
+            </button>
+            <span className="text-xs text-gray-500">
+              Este proceso usa las ventas históricas guardadas en el sistema. Puede
+              tardar unos segundos según la cantidad de datos.
+            </span>
+          </div>
+
+          {/* Resultados del último entrenamiento */}
+          {lastTrain && (
+            <div className="mt-4 border-t border-gray-200 pt-3">
+              <h3 className="text-sm font-semibold text-gray-800 mb-2">
+                Último entrenamiento
+              </h3>
+              <p className="text-xs text-gray-500 mb-2">
+                Entrenado en:{" "}
+                {new Date(lastTrain.entrenado_en).toLocaleString()} – Modelo:{" "}
+                <span className="font-mono">{lastTrain.modelo}</span>
+              </p>
+
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs">
+                  <thead className="bg-gray-50 text-left">
+                    <tr>
+                      <th className="px-3 py-2">Métrica</th>
+                      <th className="px-3 py-2">Valor</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-t">
+                      <td className="px-3 py-1.5">R² (score)</td>
+                      <td className="px-3 py-1.5">{lastTrain.metric_r2.toFixed(4)}</td>
+                    </tr>
+                    <tr className="border-t">
+                      <td className="px-3 py-1.5">MAE (Error absoluto medio)</td>
+                      <td className="px-3 py-1.5">
+                        {lastTrain.metric_mae.toFixed(2)} Bs
+                      </td>
+                    </tr>
+                    <tr className="border-t">
+                      <td className="px-3 py-1.5">RMSE (Raíz error cuadrático medio)</td>
+                      <td className="px-3 py-1.5">
+                        {lastTrain.metric_rmse.toFixed(2)} Bs
+                      </td>
+                    </tr>
+                    <tr className="border-t">
+                      <td className="px-3 py-1.5">Filas totales</td>
+                      <td className="px-3 py-1.5">{lastTrain.filas_totales}</td>
+                    </tr>
+                    <tr className="border-t">
+                      <td className="px-3 py-1.5">Filas entrenamiento</td>
+                      <td className="px-3 py-1.5">{lastTrain.filas_entrenamiento}</td>
+                    </tr>
+                    <tr className="border-t">
+                      <td className="px-3 py-1.5">Filas prueba</td>
+                      <td className="px-3 py-1.5">{lastTrain.filas_prueba}</td>
+                    </tr>
+                    <tr className="border-t">
+                      <td className="px-3 py-1.5">Features usadas</td>
+                      <td className="px-3 py-1.5">
+                        {lastTrain.feature_cols.join(", ")}
+                      </td>
+                    </tr>
+                    <tr className="border-t">
+                      <td className="px-3 py-1.5">Archivo de modelo</td>
+                      <td className="px-3 py-1.5 break-all">
+                        {lastTrain.modelo_path}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </ProtectedLayout>
   );

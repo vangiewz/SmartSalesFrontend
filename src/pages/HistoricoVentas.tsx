@@ -16,10 +16,16 @@ import {
   Legend,
   BarChart,
 } from "recharts";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, FileDown } from "lucide-react";
 
 // 👉 valores (runtime)
 import { fetchHistorico } from "../services/ventasHistoricas";
+// 👉 servicios de predicción
+import {
+  fetchPrediccionesVentas,
+  fetchPrediccionesVentasPorCategoria,
+} from "../services/modeloPrediccion";
+
 // 👉 tipos (solo type)
 import type {
   GroupBy,
@@ -30,6 +36,13 @@ import type {
   ProductoRow,
   ClienteRow,
 } from "../services/ventasHistoricas";
+import type {
+  PrediccionesVentasResponse,
+  PrediccionesVentasPorCategoriaResponse,
+} from "../services/modeloPrediccion";
+
+type ModoPrediccion = "total" | "categoria";
+type HorizontePreset = 3 | 6 | 9 | 12 | "custom";
 
 const currency = new Intl.NumberFormat("es-BO", {
   style: "currency",
@@ -67,6 +80,36 @@ function formatPeriodLabel(iso: string, granularity: Granularity = "month") {
   }
 }
 
+// Paleta simple para líneas por categoría
+const CATEGORY_COLORS = [
+  "#4f46e5",
+  "#16a34a",
+  "#f97316",
+  "#0ea5e9",
+  "#ec4899",
+  "#22c55e",
+  "#a855f7",
+  "#fbbf24",
+];
+
+interface ComparativaRow {
+  periodLabel: string;
+  historico?: number;
+  predicho?: number;
+}
+
+interface CategoriaSeriePoint {
+  period: string;
+  periodLabel: string;
+  total_predicho: number;
+}
+
+interface CategoriaSerieChart {
+  id: number;
+  name: string;
+  data: CategoriaSeriePoint[];
+}
+
 export default function HistoricoVentas() {
   // Acceso: analista y admin
   const { isAllowed, loading: rolesLoading } = useAllowedRoles([
@@ -74,6 +117,7 @@ export default function HistoricoVentas() {
     "admin",
   ]);
 
+  // ------------------- Estado de histórico -------------------
   const [groupBy, setGroupBy] = useState<GroupBy>("periodo");
   const [granularity, setGranularity] = useState<Granularity>("month");
   const [metric, setMetric] = useState<Metric>("total");
@@ -85,6 +129,32 @@ export default function HistoricoVentas() {
   const [meta, setMeta] = useState<Meta | null>(null);
   const [rows, setRows] = useState<any[]>([]);
 
+  // ------------------- Estado de predicciones -------------------
+  const [modoPred, setModoPred] = useState<ModoPrediccion>("total");
+  const [horizontePreset, setHorizontePreset] = useState<HorizontePreset>(3);
+  const [horizonteCustom, setHorizonteCustom] = useState<number>(3);
+  const [showHistoricoForecast, setShowHistoricoForecast] = useState(false);
+
+  const [forecastTotal, setForecastTotal] =
+    useState<PrediccionesVentasResponse | null>(null);
+  const [forecastCategoria, setForecastCategoria] =
+    useState<PrediccionesVentasPorCategoriaResponse | null>(null);
+  const [forecastLoading, setForecastLoading] = useState(false);
+  const [forecastError, setForecastError] = useState<string | null>(null);
+
+  // categorías seleccionadas (si está vacío => todas)
+  const [selectedCategoriaIds, setSelectedCategoriaIds] = useState<number[]>(
+    []
+  );
+
+  const horizonteMeses = useMemo(() => {
+    const raw =
+      horizontePreset === "custom" ? horizonteCustom : horizontePreset;
+    const n = Number(raw || 1);
+    return Math.min(Math.max(n, 1), 24);
+  }, [horizontePreset, horizonteCustom]);
+
+  // ------------------- Carga de histórico -------------------
   const loadData = async () => {
     setLoading(true);
     try {
@@ -117,12 +187,52 @@ export default function HistoricoVentas() {
     }
   };
 
-  // Cargar al montar (sin fechas => backend usa MIN/MAX reales)
   useEffect(() => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ------------------- Carga de predicciones -------------------
+  const loadForecast = async () => {
+    setForecastLoading(true);
+    setForecastError(null);
+    try {
+      if (modoPred === "total") {
+        const data = await fetchPrediccionesVentas(horizonteMeses);
+        setForecastTotal(data);
+        setForecastCategoria(null);
+      } else {
+        const data = await fetchPrediccionesVentasPorCategoria(horizonteMeses);
+        setForecastCategoria(data);
+        setForecastTotal(null);
+      }
+    } catch (err: any) {
+      console.error("[HistoricoVentas] Error cargando predicciones:", err);
+      const msg =
+        err?.response?.data?.detail ||
+        err?.message ||
+        "Error al cargar predicciones de ventas.";
+      setForecastError(msg);
+      toast.error(msg);
+    } finally {
+      setForecastLoading(false);
+    }
+  };
+
+  // Cargar una vez con los valores por defecto
+  useEffect(() => {
+    loadForecast();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Si cambian las predicciones por categoría, reseteamos selección (todas)
+  useEffect(() => {
+    if (forecastCategoria) {
+      setSelectedCategoriaIds([]);
+    }
+  }, [forecastCategoria]);
+
+  // ------------------- Derivados histórico -------------------
   const periodData = useMemo(() => {
     if (groupBy !== "periodo") return [];
     const g = (meta?.granularity as Granularity) || granularity;
@@ -132,7 +242,6 @@ export default function HistoricoVentas() {
     }));
   }, [rows, groupBy, meta?.granularity, granularity]);
 
-  // Agregamos ticket_promedio calculado para producto/cliente
   const barRows = useMemo(() => {
     if (groupBy === "producto") {
       return (rows as ProductoRow[]).map((r) => ({
@@ -150,11 +259,143 @@ export default function HistoricoVentas() {
   }, [rows, groupBy]);
 
   const headerTitle = useMemo(() => {
-    if (groupBy === "periodo") return "Ventas históricas por período";
+    if (groupBy === "periodo")
+      return "Dashboard de ventas históricas y predicciones";
     if (groupBy === "producto") return "Top productos";
     return "Top clientes";
   }, [groupBy]);
 
+  // ------------------- Derivados predicción TOTAL -------------------
+  const comparativaTotalData: ComparativaRow[] = useMemo(() => {
+    if (!forecastTotal) return [];
+
+    const g: Granularity = "month";
+
+    if (!showHistoricoForecast) {
+      // Solo futuros
+      return forecastTotal.predicciones.map((p) => ({
+        periodLabel: formatPeriodLabel(p.periodo, g),
+        predicho: p.total_predicho,
+      }));
+    }
+
+    // Histórico + futuros
+    const map = new Map<string, ComparativaRow>();
+
+    forecastTotal.historico.forEach((h) => {
+      const label = formatPeriodLabel(h.periodo, g);
+      const entry = map.get(label) || { periodLabel: label };
+      entry.historico = h.total_real;
+      map.set(label, entry);
+    });
+
+    forecastTotal.predicciones.forEach((p) => {
+      const label = formatPeriodLabel(p.periodo, g);
+      const entry = map.get(label) || { periodLabel: label };
+      entry.predicho = p.total_predicho;
+      map.set(label, entry);
+    });
+
+    return Array.from(map.values());
+  }, [forecastTotal, showHistoricoForecast]);
+
+  // ------------------- Derivados predicción por CATEGORÍA -------------------
+  const categoriaSeriesChart: CategoriaSerieChart[] = useMemo(() => {
+    if (!forecastCategoria) return [];
+
+    const series = (forecastCategoria as any).series;
+
+    if (!Array.isArray(series)) {
+      console.warn(
+        "[HistoricoVentas] Respuesta inesperada en forecastCategoria",
+        forecastCategoria
+      );
+      return [];
+    }
+
+    return series.map((cat: any) => ({
+      id: cat.categoria_id,
+      name: cat.categoria,
+      data: cat.predicciones.map((p: any) => ({
+        period: p.periodo,
+        periodLabel: formatPeriodLabel(p.periodo, "month"),
+        total_predicho: p.total_predicho,
+      })),
+    }));
+  }, [forecastCategoria]);
+
+  // Todas las fechas combinadas (para que el eje X y la tabla usen TODO)
+  const categoriaCombinedData = useMemo(() => {
+    if (categoriaSeriesChart.length === 0) return [];
+
+    const map = new Map<
+      string,
+      { period: string; periodLabel: string; [key: string]: any }
+    >();
+
+    categoriaSeriesChart.forEach((serie) => {
+      serie.data.forEach((p) => {
+        const key = p.period;
+        let row = map.get(key);
+        if (!row) {
+          row = { period: p.period, periodLabel: p.periodLabel };
+          map.set(key, row);
+        }
+        row[serie.name] = p.total_predicho;
+      });
+    });
+
+    const arr = Array.from(map.values());
+    arr.sort((a, b) => (a.period < b.period ? -1 : a.period > b.period ? 1 : 0));
+    return arr;
+  }, [categoriaSeriesChart]);
+
+  // Categorías visibles según selección
+  const visibleCategorias = useMemo(() => {
+    if (selectedCategoriaIds.length === 0) return categoriaSeriesChart;
+    return categoriaSeriesChart.filter((s) =>
+      selectedCategoriaIds.includes(s.id)
+    );
+  }, [categoriaSeriesChart, selectedCategoriaIds]);
+
+  const toggleCategoria = (id: number) => {
+    setSelectedCategoriaIds((prev) => {
+      if (prev.length === 0) {
+        // antes estaban todas, empezamos selección nueva solo con esta
+        return [id];
+      }
+      if (prev.includes(id)) {
+        const next = prev.filter((x) => x !== id);
+        return next;
+      }
+      return [...prev, id];
+    });
+  };
+
+  const mostrarTodasCategorias = () => {
+    setSelectedCategoriaIds([]);
+  };
+
+  const getCategoriaColor = (id: number) => {
+    const idx = categoriaSeriesChart.findIndex((s) => s.id === id);
+    const safeIdx = idx === -1 ? 0 : idx;
+    return CATEGORY_COLORS[safeIdx % CATEGORY_COLORS.length];
+  };
+
+  // ------------------- Exportar a PDF (via print) -------------------
+  const handleExportPdf = () => {
+    try {
+      window.print();
+      toast("Usa la opción 'Guardar como PDF' en el cuadro de impresión.", {
+        icon: "🖨️",
+      });
+    } catch (e) {
+      console.error(e);
+      toast.error("No se pudo iniciar la impresión. Intenta nuevamente.");
+    }
+  };
+
+  // ------------------- Render -------------------
   if (rolesLoading) {
     return (
       <ProtectedLayout>
@@ -169,6 +410,7 @@ export default function HistoricoVentas() {
   return (
     <ProtectedLayout>
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
+        {/* Header */}
         <div className="mb-6 sm:mb-8 flex items-center gap-3">
           <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 p-3 rounded-2xl shadow-lg">
             <BarChart3 className="w-7 h-7 text-white" />
@@ -179,13 +421,13 @@ export default function HistoricoVentas() {
             </h1>
             <p className="text-gray-700 text-sm">
               {groupBy === "periodo"
-                ? "Se muestran solo períodos con datos. Si no eliges fechas, se usa desde la primera venta hasta la última."
+                ? "Analiza ventas históricas y proyecciones futuras por período. Si no eliges fechas, se usa desde la primera venta hasta la última."
                 : "Ranking agregado en el rango. Si no eliges fechas, se usa desde la primera venta hasta la última."}
             </p>
           </div>
         </div>
 
-        {/* Filtros */}
+        {/* Filtros histórico */}
         <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             <div>
@@ -275,16 +517,16 @@ export default function HistoricoVentas() {
             </div>
           </div>
 
-          <div className="mt-4 flex items-center gap-2">
+          <div className="mt-4 flex flex-wrap items-center gap-2">
             <button
-              className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
+              className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-sm"
               onClick={loadData}
               disabled={loading}
             >
               {loading ? "Cargando…" : "Aplicar filtros"}
             </button>
             <button
-              className="px-3 py-2 rounded-md border hover:bg-gray-50"
+              className="px-3 py-2 rounded-md border hover:bg-gray-50 text-sm"
               onClick={() => {
                 setDateFrom(undefined);
                 setDateTo(undefined);
@@ -301,7 +543,7 @@ export default function HistoricoVentas() {
           </div>
         </div>
 
-        {/* Contenido */}
+        {/* Contenido histórico */}
         <div className="mt-6">
           {loading ? (
             <div className="flex justify-center py-12">
@@ -315,7 +557,7 @@ export default function HistoricoVentas() {
             </div>
           ) : groupBy === "periodo" ? (
             <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-              <div className="h-[380px]">
+              <div className="h-[320px] sm:h-[380px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={periodData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -331,7 +573,6 @@ export default function HistoricoVentas() {
                     <Tooltip
                       formatter={(value: any, _name: string, props: any) => {
                         const key = String(props.dataKey);
-
                         if (key === "total") {
                           return [
                             currency
@@ -385,7 +626,7 @@ export default function HistoricoVentas() {
               </div>
 
               <div className="mt-4 overflow-x-auto">
-                <table className="min-w-full text-sm">
+                <table className="min-w-full text-xs sm:text-sm">
                   <thead className="text-left bg-gray-50">
                     <tr>
                       <th className="px-3 py-2">Período</th>
@@ -425,7 +666,7 @@ export default function HistoricoVentas() {
             </div>
           ) : (
             <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-              <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-2">
                 <div className="text-sm text-gray-600">
                   Mostrando Top {topN} por{" "}
                   {metric === "total"
@@ -434,9 +675,9 @@ export default function HistoricoVentas() {
                     ? "Cantidad"
                     : "Ticket promedio"}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <button
-                    className={`px-3 py-1.5 rounded-md border ${
+                    className={`px-3 py-1.5 rounded-md border text-xs sm:text-sm ${
                       metric === "total"
                         ? "bg-indigo-600 text-white border-indigo-600"
                         : "hover:bg-gray-50"
@@ -446,7 +687,7 @@ export default function HistoricoVentas() {
                     Total
                   </button>
                   <button
-                    className={`px-3 py-1.5 rounded-md border ${
+                    className={`px-3 py-1.5 rounded-md border text-xs sm:text-sm ${
                       metric === "cantidad"
                         ? "bg-indigo-600 text-white border-indigo-600"
                         : "hover:bg-gray-50"
@@ -456,7 +697,7 @@ export default function HistoricoVentas() {
                     Cantidad
                   </button>
                   <button
-                    className={`px-3 py-1.5 rounded-md border ${
+                    className={`px-3 py-1.5 rounded-md border text-xs sm:text-sm ${
                       metric === "ticket_promedio"
                         ? "bg-indigo-600 text-white border-indigo-600"
                         : "hover:bg-gray-50"
@@ -468,7 +709,7 @@ export default function HistoricoVentas() {
                 </div>
               </div>
 
-              <div className="h-[420px]">
+              <div className="h-[340px] sm:h-[420px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={barRows}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -524,7 +765,7 @@ export default function HistoricoVentas() {
               </div>
 
               <div className="mt-4 overflow-x-auto">
-                <table className="min-w-full text-sm">
+                <table className="min-w-full text-xs sm:text-sm">
                   <thead className="text-left bg-gray-50">
                     <tr>
                       <th className="px-3 py-2">
@@ -559,6 +800,383 @@ export default function HistoricoVentas() {
                     })}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* --------- Sección de predicciones --------- */}
+        <div className="mt-8 bg-white border border-gray-200 rounded-xl p-4 sm:p-5 shadow-sm">
+          <div className="flex flex-col lg:flex-row gap-4 lg:items-start lg:justify-between">
+            <div className="flex-1">
+              <h2 className="text-lg sm:text-xl font-bold text-emerald-900">
+                Predicciones de ventas futuras
+              </h2>
+              <p className="text-gray-600 text-xs sm:text-sm mt-1">
+                Visualiza el total mensual o desagregado por categoría.
+                Opcionalmente compara con el histórico.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleExportPdf}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-gray-300 text-xs sm:text-sm bg-white hover:bg-gray-50"
+              >
+                <FileDown className="w-4 h-4" />
+                Exportar PDF
+              </button>
+            </div>
+          </div>
+
+          {/* Controles de predicción */}
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+            <div>
+              <label className="text-xs font-semibold text-gray-600">
+                Modo de predicción
+              </label>
+              <select
+                className="mt-1 w-full border rounded-md p-2 text-sm"
+                value={modoPred}
+                onChange={(e) => setModoPred(e.target.value as ModoPrediccion)}
+              >
+                <option value="total">Total mensual</option>
+                <option value="categoria">Por categoría</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-gray-600">
+                Horizonte (meses)
+              </label>
+              <div className="mt-1 flex flex-wrap gap-1">
+                {[3, 6, 9, 12].map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    className={`px-2.5 py-1 rounded-md border text-xs ${
+                      horizontePreset === v
+                        ? "bg-emerald-600 text-white border-emerald-600"
+                        : "bg-white hover:bg-gray-50"
+                    }`}
+                    onClick={() => setHorizontePreset(v as HorizontePreset)}
+
+                  >
+                    {v}
+                  </button>
+                ))}
+                <input
+                  type="number"
+                  min={1}
+                  max={24}
+                  value={horizontePreset === "custom" ? horizonteCustom : ""}
+                  placeholder="Otro"
+                  className="flex-1 min-w-[60px] border rounded-md px-2 py-1 text-xs"
+                  onChange={(e) => {
+                    setHorizontePreset("custom");
+                    setHorizonteCustom(Number(e.target.value || 1));
+                  }}
+                />
+              </div>
+              <p className="mt-1 text-[11px] text-gray-500">
+                Rango permitido: 1–24.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 mt-2 sm:mt-0">
+              <input
+                id="show_historico_forecast"
+                type="checkbox"
+                className="h-4 w-4"
+                checked={showHistoricoForecast}
+                onChange={(e) => setShowHistoricoForecast(e.target.checked)}
+                disabled={modoPred !== "total"}
+              />
+              <label
+                htmlFor="show_historico_forecast"
+                className="text-xs sm:text-sm text-gray-700"
+              >
+                Mostrar histórico de ventas
+              </label>
+            </div>
+
+            <div className="flex sm:justify-end">
+              <button
+                type="button"
+                onClick={loadForecast}
+                disabled={forecastLoading}
+                className="w-full sm:w-auto px-4 py-2 rounded-md bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {forecastLoading ? "Actualizando…" : "Actualizar predicción"}
+              </button>
+            </div>
+          </div>
+
+          {/* Gráfico de predicción */}
+          <div className="mt-5">
+            {forecastLoading ? (
+              <div className="flex justify-center py-10">
+                <LoadingSpinner size="lg" />
+              </div>
+            ) : forecastError ? (
+              <div className="text-red-600 text-sm text-center py-6">
+                {forecastError}
+              </div>
+            ) : modoPred === "total" ? (
+              !forecastTotal || comparativaTotalData.length === 0 ? (
+                <div className="text-gray-500 text-center py-6 text-sm">
+                  No hay datos suficientes para mostrar predicciones.
+                </div>
+              ) : (
+                <>
+                  <div className="h-[320px] sm:h-[380px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart data={comparativaTotalData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="periodLabel" />
+                        <YAxis
+                          tickFormatter={(v) =>
+                            currency.format(v).replace("BOB ", "Bs ")
+                          }
+                        />
+                        <Tooltip
+                          formatter={(value: any, name: string) => [
+                            currency
+                              .format(value as number)
+                              .replace("BOB ", "Bs "),
+                            name,
+                          ]}
+                        />
+                        <Legend />
+                        {showHistoricoForecast && (
+                          <Bar
+                            dataKey="historico"
+                            name="Histórico (Bs)"
+                            fill="#4f46e5"
+                            opacity={0.6}
+                          />
+                        )}
+                        <Line
+                          type="monotone"
+                          dataKey="predicho"
+                          name="Predicción (Bs)"
+                          stroke="#16a34a"
+                          strokeWidth={2.5}
+                          dot={{ r: 3 }}
+                          strokeDasharray={
+                            showHistoricoForecast ? "5 4" : undefined
+                          }
+                        />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="mt-4 overflow-x-auto">
+                    <table className="min-w-full text-[11px] sm:text-xs lg:text-sm">
+                      <thead className="text-left bg-gray-50">
+                        <tr>
+                          <th className="px-3 py-2">Período</th>
+                          {showHistoricoForecast && (
+                            <th className="px-3 py-2 text-right">
+                              Histórico (Bs)
+                            </th>
+                          )}
+                          <th className="px-3 py-2 text-right">
+                            Predicción (Bs)
+                          </th>
+                          {showHistoricoForecast && (
+                            <th className="px-3 py-2 text-right">
+                              Diferencia
+                            </th>
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {comparativaTotalData.map((row, idx) => {
+                          const h = row.historico ?? 0;
+                          const p = row.predicho ?? 0;
+                          const diff = p - h;
+                          return (
+                            <tr key={idx} className="border-t">
+                              <td className="px-3 py-2">
+                                {row.periodLabel}
+                              </td>
+                              {showHistoricoForecast && (
+                                <td className="px-3 py-2 text-right">
+                                  {h
+                                    ? currency
+                                        .format(h)
+                                        .replace("BOB ", "Bs ")
+                                    : "-"}
+                                </td>
+                              )}
+                              <td className="px-3 py-2 text-right">
+                                {p
+                                  ? currency
+                                      .format(p)
+                                      .replace("BOB ", "Bs ")
+                                  : "-"}
+                              </td>
+                              {showHistoricoForecast && (
+                                <td
+                                  className={`px-3 py-2 text-right ${
+                                    diff > 0
+                                      ? "text-emerald-600"
+                                      : diff < 0
+                                      ? "text-red-600"
+                                      : "text-gray-600"
+                                  }`}
+                                >
+                                  {diff
+                                    ? currency
+                                        .format(diff)
+                                        .replace("BOB ", "Bs ")
+                                    : "-"}
+                                </td>
+                              )}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )
+            ) : // -------- modo = "categoria" --------
+            !forecastCategoria || categoriaSeriesChart.length === 0 ? (
+              <div className="text-gray-500 text-center py-6 text-sm">
+                No hay datos suficientes para mostrar predicciones por
+                categoría.
+              </div>
+            ) : (
+              <>
+                {/* Filtros de categoría */}
+                <div className="mb-3">
+                  <p className="text-[11px] sm:text-xs text-gray-600 mb-1">
+                    Selecciona las categorías que quieres ver:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={mostrarTodasCategorias}
+                      className={`px-3 py-1 rounded-full border text-[11px] sm:text-xs ${
+                        selectedCategoriaIds.length === 0
+                          ? "bg-emerald-600 text-white border-emerald-600"
+                          : "bg-white hover:bg-gray-50"
+                      }`}
+                    >
+                      Todas
+                    </button>
+                    {categoriaSeriesChart.map((serie) => {
+                      const isActive =
+                        selectedCategoriaIds.length === 0 ||
+                        selectedCategoriaIds.includes(serie.id);
+                      return (
+                        <button
+                          key={serie.id}
+                          type="button"
+                          onClick={() => toggleCategoria(serie.id)}
+                          className={`px-3 py-1 rounded-full border text-[11px] sm:text-xs ${
+                            isActive
+                              ? "bg-emerald-50 border-emerald-500 text-emerald-700"
+                              : "bg-white hover:bg-gray-50 text-gray-700"
+                          }`}
+                        >
+                          {serie.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="h-[320px] sm:h-[380px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={categoriaCombinedData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="periodLabel" />
+                      <YAxis
+                        domain={[0, "dataMax"]}
+                        tickFormatter={(v) =>
+                          currency.format(v).replace("BOB ", "Bs ")
+                        }
+                      />
+                      <Tooltip
+                        formatter={(value: any, name: string) => [
+                          currency
+                            .format(value as number)
+                            .replace("BOB ", "Bs "),
+                          name,
+                        ]}
+                      />
+                      <Legend />
+                      {visibleCategorias.map((serie) => (
+                        <Line
+                          key={serie.id}
+                          type="monotone"
+                          dataKey={serie.name}
+                          name={serie.name}
+                          stroke={getCategoriaColor(serie.id)}
+                          strokeWidth={2}
+                          dot={false}
+                        />
+                      ))}
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="mt-4 overflow-x-auto">
+                  <table className="min-w-full text-[11px] sm:text-xs lg:text-sm">
+                    <thead className="text-left bg-gray-50">
+                      <tr>
+                        <th className="px-3 py-2">Período</th>
+                        {visibleCategorias.map((serie) => (
+                          <th
+                            key={serie.id}
+                            className="px-3 py-2 text-right"
+                          >
+                            {serie.name} (Bs)
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {categoriaCombinedData.map((row: any) => (
+                        <tr key={row.period} className="border-t">
+                          <td className="px-3 py-2">{row.periodLabel}</td>
+                          {visibleCategorias.map((serie) => {
+                            const value = row[serie.name] as
+                              | number
+                              | undefined;
+                            return (
+                              <td
+                                key={serie.id}
+                                className="px-3 py-2 text-right"
+                              >
+                                {value
+                                  ? currency
+                                      .format(value)
+                                      .replace("BOB ", "Bs ")
+                                  : "-"}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+          </div>
+
+          {(forecastTotal || forecastCategoria) && (
+            <div className="mt-3 text-[11px] sm:text-xs text-gray-500 flex flex-wrap gap-2 justify-between">
+              <div>
+                Horizonte usado: {horizonteMeses}{" "}
+                {horizonteMeses === 1 ? "mes" : "meses"}
+              </div>
+              <div>
+                Modo: {modoPred === "total" ? "Total mensual" : "Por categoría"}
               </div>
             </div>
           )}

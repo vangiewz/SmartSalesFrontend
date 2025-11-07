@@ -26,6 +26,7 @@ import HistoricoVentas from './pages/HistoricoVentas'
 import ModeloPrediccion from './pages/ConfigModeloPrediccion'
 import IAdashboard from './pages/DashboardInteligenciaArtificialPage'
 
+
 // Páginas de garantías
 import GarantiaPage from './pages/garantia'
 import MisGarantiasPage from './pages/garantia/mis'
@@ -61,6 +62,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+          
 
 
         <Route
