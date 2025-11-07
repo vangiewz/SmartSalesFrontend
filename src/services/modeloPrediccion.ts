@@ -39,6 +39,9 @@ export interface EntrenamientoModeloResponse {
   feature_cols: string[];
 }
 
+// 👉 Alias para que el front pueda importar TrainModeloResult sin romper
+export type TrainModeloResult = EntrenamientoModeloResponse;
+
 // ---- Puntos de serie temporal ----
 export interface PuntoHistorico {
   periodo: string; // YYYY-MM-DD
