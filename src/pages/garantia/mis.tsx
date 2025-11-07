@@ -44,10 +44,12 @@ export default function MisGarantiasPage() {
         console.log('📊 ¿Es array?:', Array.isArray(response));
         console.log('📊 Tipo:', typeof response);
         console.log('📊 Keys:', response ? Object.keys(response) : 'null');
-        console.log('📊 Length:', response?.length);
+        console.log('📊 Length:', Array.isArray(response) ? response.length : 'N/A');
         
         // Si el backend retorna un objeto con 'results', usar eso
-        const garantiasArray = Array.isArray(response) ? response : (response?.results || []);
+        const garantiasArray = Array.isArray(response) 
+          ? response 
+          : ((response as unknown as { results?: GarantiaClaim[] })?.results || []);
         console.log('📊 Array final:', garantiasArray);
         console.log('📊 Total de garantías:', garantiasArray.length);
         
