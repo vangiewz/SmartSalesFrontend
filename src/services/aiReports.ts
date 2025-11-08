@@ -1,5 +1,5 @@
-import { api } from "../lib/client";
-
+// src/services/aiReports.ts
+import { ngrokApi } from "../lib/client";
 export type AIReportResponse = {
   columns: string[];
   rows: (string | number | null)[][];
@@ -22,7 +22,7 @@ export type PlantillaReporte = {
 
 // Lista todas las plantillas del usuario autenticado
 export async function fetchPlantillas(): Promise<PlantillaReporte[]> {
-  const res = await api.get("/ai-reports/plantillas/");
+  const res = await ngrokApi.get("/ai-reports/plantillas/");
   return res.data as PlantillaReporte[];
 }
 
@@ -33,18 +33,21 @@ export async function createPlantilla(data: {
   formato?: "pdf" | "xlsx" | "csv" | null;
   filtros?: Record<string, any> | null;
 }): Promise<PlantillaReporte> {
-  const res = await api.post("/ai-reports/plantillas/", data);
+  const res = await ngrokApi.post("/ai-reports/plantillas/", data);
   return res.data as PlantillaReporte;
 }
 
 // Elimina una plantilla por ID
 export async function deletePlantilla(id: number): Promise<void> {
-  await api.delete(`/ai-reports/plantillas/${id}/`);
+  await ngrokApi.delete(`/ai-reports/plantillas/${id}/`);
 }
 
 // Edita una plantilla
-export async function updatePlantilla(id: number, data: Partial<PlantillaReporte>): Promise<PlantillaReporte> {
-  const res = await api.put(`/ai-reports/plantillas/${id}/`, data);
+export async function updatePlantilla(
+  id: number,
+  data: Partial<PlantillaReporte>
+): Promise<PlantillaReporte> {
+  const res = await ngrokApi.put(`/ai-reports/plantillas/${id}/`, data);
   return res.data as PlantillaReporte;
 }
 
@@ -72,7 +75,6 @@ function normalize(json: any): AIReportResponse {
   // Si manda results: [...] (objetos), lo convertimos a columns/rows.
   const results: any[] = Array.isArray(json?.results) ? json.results : [];
   if (results.length > 0 && typeof results[0] === "object" && results[0] !== null) {
-    // Orden preferido cuando el intent es ventas_detalladas
     const preferredOrder =
       intent === "ventas_detalladas"
         ? [
@@ -93,14 +95,12 @@ function normalize(json: any): AIReportResponse {
         : [];
 
     const keysInResult = Object.keys(results[0]);
-
-    // Construimos el orden final: primero preferred (si existen), luego el resto.
     const orderedKeys: string[] = [
       ...preferredOrder.filter((k) => keysInResult.includes(k)),
       ...keysInResult.filter((k) => !preferredOrder.includes(k)),
     ];
 
-    const columns = orderedKeys.map((k) => k); // UI espera string[]
+    const columns = orderedKeys.map((k) => k);
     const rows = results.map((r) =>
       orderedKeys.map((k) => (r[k] === undefined ? null : r[k]))
     );
@@ -108,7 +108,7 @@ function normalize(json: any): AIReportResponse {
     return { intent, start, end, filters, columns, rows };
   }
 
-  // Fallback: si todo falla, devuelve estructura vacía coherente
+  // Fallback vacío
   return { intent, start, end, filters, columns: [], rows: [] };
 }
 
@@ -116,7 +116,7 @@ function normalize(json: any): AIReportResponse {
 
 /** Ejecuta el reporte por prompt y devuelve columns/rows normalizados. */
 export async function runAIReport(prompt: string): Promise<AIReportResponse> {
-  const resp = await api.post("ai-reports/run", {
+  const resp = await ngrokApi.post("ai-reports/run", {
     prompt,
     formato: "json", // fuerza JSON para normalizar en el front
   });
@@ -131,7 +131,7 @@ export async function downloadAIReportBlob(
   prompt: string,
   formato: "csv" | "xlsx" | "pdf"
 ): Promise<Blob> {
-  const resp = await api.post(
+  const resp = await ngrokApi.post(
     "ai-reports/run",
     { prompt, formato },
     { responseType: "blob" }
