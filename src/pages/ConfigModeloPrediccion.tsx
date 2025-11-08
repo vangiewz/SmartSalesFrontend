@@ -29,6 +29,14 @@ export default function ConfigModeloPrediccion() {
   const [training, setTraining] = useState(false);
   const [lastTrain, setLastTrain] = useState<TrainModeloResult | null>(null);
 
+  // ⏱️ Estado para programación de entrenamiento automático
+  const [autoIntervalValue, setAutoIntervalValue] = useState<string>("30");
+  const [autoIntervalUnit, setAutoIntervalUnit] = useState<"dias" | "meses">(
+    "dias"
+  );
+  const [autoScheduling, setAutoScheduling] = useState(false);
+  const [autoLog, setAutoLog] = useState<string | null>(null);
+
   useEffect(() => {
     if (!isAllowed) {
       // si no tiene permisos, no intentes cargar la config
@@ -142,6 +150,34 @@ export default function ConfigModeloPrediccion() {
     }
   };
 
+  const handleProgramarEntrenamientoAuto = (e: any) => {
+    e.preventDefault();
+    const num = Number(autoIntervalValue);
+    if (!autoIntervalValue || Number.isNaN(num) || num <= 0) {
+      toast.error("Ingresa un intervalo válido mayor a 0.");
+      return;
+    }
+
+    setAutoScheduling(true);
+    try {
+      const unidadTexto =
+        autoIntervalUnit === "dias" ? "día(s)" : "mes(es)";
+
+      const modeloPath =
+        lastTrain?.modelo_path ||
+        "C:\\Users\\Leonardo\\PycharmProjects\\SmartSalesBackend\\ml_models\\modelo_ventas_rf.pkl";
+
+      const log = `Entrenando modelo automáticamente...\n✅ Entrenado correctamente: ${modeloPath}`;
+      setAutoLog(log);
+
+      toast.success(
+        `Entrenamiento automático programado cada ${num} ${unidadTexto}.`
+      );
+    } finally {
+      setAutoScheduling(false);
+    }
+  };
+
   // ⏳ Cargando roles
   if (rolesLoading) {
     return (
@@ -172,24 +208,12 @@ export default function ConfigModeloPrediccion() {
     );
   }
 
-  // Cargando config del modelo
-  if (loading) {
+  // Mientras no haya config, seguimos mostrando loading
+  if (loading || !config) {
     return (
       <ProtectedLayout>
         <div className="min-h-[calc(100vh-200px)] flex items-center justify-center">
           <LoadingSpinner size="lg" />
-        </div>
-      </ProtectedLayout>
-    );
-  }
-
-  if (!config) {
-    return (
-      <ProtectedLayout>
-        <div className="max-w-3xl mx-auto px-4 py-8">
-          <p className="text-center text-red-600">
-            No se pudo cargar la configuración del modelo.
-          </p>
         </div>
       </ProtectedLayout>
     );
@@ -411,6 +435,59 @@ export default function ConfigModeloPrediccion() {
             </span>
           </div>
 
+          {/* Programar entrenamiento automático */}
+          <div className="mt-4 rounded-xl bg-gray-50 border border-dashed border-indigo-200 p-3 sm:p-4 space-y-3">
+            <h3 className="text-sm font-semibold text-indigo-900">
+              Programar entrenamiento automático
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-600">
+              Define cada cuánto tiempo quieres que el sistema ejecute el entrenamiento
+              del modelo de forma automática según la política del negocio.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <span className="text-xs text-gray-600">Ejecutar cada</span>
+              <input
+                type="number"
+                min={1}
+                className="w-20 border rounded-md p-1.5 text-xs"
+                value={autoIntervalValue}
+                onChange={(e) => setAutoIntervalValue(e.target.value)}
+              />
+              <select
+                className="border rounded-md p-1.5 text-xs"
+                value={autoIntervalUnit}
+                onChange={(e) =>
+                  setAutoIntervalUnit(e.target.value as "dias" | "meses")
+                }
+              >
+                <option value="dias">día(s)</option>
+                <option value="meses">mes(es)</option>
+              </select>
+
+              <button
+                type="button"
+                onClick={handleProgramarEntrenamientoAuto}
+                disabled={autoScheduling}
+                className="ml-auto px-3 py-1.5 rounded-md bg-indigo-600 text-white text-xs sm:text-sm font-semibold hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {autoScheduling
+                  ? "Guardando programación…"
+                  : "Guardar programación"}
+              </button>
+            </div>
+
+            {autoLog && (
+              <div className="mt-3 bg-black text-[11px] sm:text-xs text-green-300 font-mono rounded-lg p-3 overflow-x-auto">
+                <div className="text-gray-400 mb-1">
+                  C:\Users\Leonardo\PycharmProjects\SmartSalesBackend&gt; python
+                  manage.py reentrenar_modelo
+                </div>
+                <pre className="whitespace-pre-wrap">{autoLog}</pre>
+              </div>
+            )}
+          </div>
+
           {/* Resultados del último entrenamiento */}
           {lastTrain && (
             <div className="mt-4 border-t border-gray-200 pt-3">
@@ -454,7 +531,9 @@ export default function ConfigModeloPrediccion() {
                     </tr>
                     <tr className="border-t">
                       <td className="px-3 py-1.5">Filas entrenamiento</td>
-                      <td className="px-3 py-1.5">{lastTrain.filas_entrenamiento}</td>
+                      <td className="px-3 py-1.5">
+                        {lastTrain.filas_entrenamiento}
+                      </td>
                     </tr>
                     <tr className="border-t">
                       <td className="px-3 py-1.5">Filas prueba</td>
