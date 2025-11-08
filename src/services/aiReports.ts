@@ -1,5 +1,5 @@
-// src/services/aiReports.ts
-import { ngrokApi } from "../lib/client";
+import { api, ngrokApi } from "../lib/client";
+
 export type AIReportResponse = {
   columns: string[];
   rows: (string | number | null)[][];
@@ -10,6 +10,7 @@ export type AIReportResponse = {
 };
 
 // ================== PLANTILLAS ===================
+
 export type PlantillaReporte = {
   id: number;
   nombre: string;
@@ -22,8 +23,24 @@ export type PlantillaReporte = {
 
 // Lista todas las plantillas del usuario autenticado
 export async function fetchPlantillas(): Promise<PlantillaReporte[]> {
-  const res = await ngrokApi.get("/ai-reports/plantillas/");
-  return res.data as PlantillaReporte[];
+  const res = await api.get("/ai-reports/plantillas/");
+  const data = res.data;
+
+  // 👀 Para ver qué viene realmente del backend
+  console.log("[AI] plantillas response:", data);
+
+  // 1) Si ya es un array, perfecto
+  if (Array.isArray(data)) {
+    return data as PlantillaReporte[];
+  }
+
+  // 2) Si viene envuelto en { results: [...] }
+  if (Array.isArray((data as any)?.results)) {
+    return (data as any).results as PlantillaReporte[];
+  }
+
+  // 3) Cualquier otra cosa: no rompas la UI
+  return [];
 }
 
 // Crea una nueva plantilla
@@ -33,13 +50,13 @@ export async function createPlantilla(data: {
   formato?: "pdf" | "xlsx" | "csv" | null;
   filtros?: Record<string, any> | null;
 }): Promise<PlantillaReporte> {
-  const res = await ngrokApi.post("/ai-reports/plantillas/", data);
+  const res = await api.post("/ai-reports/plantillas/", data);
   return res.data as PlantillaReporte;
 }
 
 // Elimina una plantilla por ID
 export async function deletePlantilla(id: number): Promise<void> {
-  await ngrokApi.delete(`/ai-reports/plantillas/${id}/`);
+  await api.delete(`/ai-reports/plantillas/${id}/`);
 }
 
 // Edita una plantilla
@@ -47,7 +64,7 @@ export async function updatePlantilla(
   id: number,
   data: Partial<PlantillaReporte>
 ): Promise<PlantillaReporte> {
-  const res = await ngrokApi.put(`/ai-reports/plantillas/${id}/`, data);
+  const res = await api.put(`/ai-reports/plantillas/${id}/`, data);
   return res.data as PlantillaReporte;
 }
 
@@ -74,7 +91,9 @@ function normalize(json: any): AIReportResponse {
 
   // Si manda results: [...] (objetos), lo convertimos a columns/rows.
   const results: any[] = Array.isArray(json?.results) ? json.results : [];
+
   if (results.length > 0 && typeof results[0] === "object" && results[0] !== null) {
+    // Orden preferido cuando el intent es ventas_detalladas
     const preferredOrder =
       intent === "ventas_detalladas"
         ? [
@@ -95,21 +114,37 @@ function normalize(json: any): AIReportResponse {
         : [];
 
     const keysInResult = Object.keys(results[0]);
+
+    // Construimos el orden final: primero preferred (si existen), luego el resto.
     const orderedKeys: string[] = [
       ...preferredOrder.filter((k) => keysInResult.includes(k)),
       ...keysInResult.filter((k) => !preferredOrder.includes(k)),
     ];
 
-    const columns = orderedKeys.map((k) => k);
+    const columns = orderedKeys.map((k) => k); // UI espera string[]
     const rows = results.map((r) =>
       orderedKeys.map((k) => (r[k] === undefined ? null : r[k]))
     );
 
-    return { intent, start, end, filters, columns, rows };
+    return {
+      intent,
+      start,
+      end,
+      filters,
+      columns,
+      rows,
+    };
   }
 
-  // Fallback vacío
-  return { intent, start, end, filters, columns: [], rows: [] };
+  // Fallback: si todo falla, devuelve estructura vacía coherente
+  return {
+    intent,
+    start,
+    end,
+    filters,
+    columns: [],
+    rows: [],
+  };
 }
 
 // --- API calls -------------------------------------------------------------
@@ -125,7 +160,7 @@ export async function runAIReport(prompt: string): Promise<AIReportResponse> {
 
 /**
  * Descarga un archivo (csv/xlsx/pdf) como Blob.
- * El backend debe aceptar `formato` y devolver blob desde el mismo endpoint.
+ * El backend debe aceptar formato y devolver blob desde el mismo endpoint.
  */
 export async function downloadAIReportBlob(
   prompt: string,

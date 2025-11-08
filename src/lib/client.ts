@@ -2,15 +2,14 @@
 import axios from "axios";
 
 // Alterna manualmente entre local y producción
-const USE_PROD = false; // Cambia a true para producción
+const USE_PROD = true; // Cambia a true para producción
 const BASE_URLS = {
   local: "http://127.0.0.1:8000/api/",
   prod: "https://smartsalesbackend.onrender.com/api/",
 };
 
 // ❗️NUEVO: URL fija de ngrok para la página especial
-const NGROK_URL = "https://daryl-draftable-overdogmatically.ngrok-free.dev/api/";
-
+const NGROK_URL = "https://daryl-draftable-overdogmatically.ngrok-free.dev/api/"
 // ============================
 // Cliente general (igual que antes)
 // ============================

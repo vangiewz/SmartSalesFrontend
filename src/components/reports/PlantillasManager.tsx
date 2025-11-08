@@ -33,7 +33,8 @@ export default function PlantillasManager({
     setLoading(true);
     try {
       const data = await fetchPlantillas();
-      setPlantillas(data);
+      // 🔽 ÚNICO CAMBIO:
+      setPlantillas(Array.isArray(data) ? data : []);
     } catch (e: any) {
       toast.error(e?.message || "No se pudieron cargar las plantillas");
     } finally {
