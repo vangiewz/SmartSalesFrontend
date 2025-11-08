@@ -1,5 +1,5 @@
 // src/services/ventasHistoricas.ts
-import { api } from "../lib/client";
+import { ngrokApi } from "../lib/client"; // 🔹 usa el cliente especial de ngrok
 
 export type GroupBy = "periodo" | "producto" | "cliente";
 export type Granularity = "day" | "week" | "month" | "quarter" | "year";
@@ -44,6 +44,9 @@ export interface HistoricoResponse<T = any> {
 export const EP_RECOMMENDED = "ventas-historicas/historico/";
 export const EP_LEGACY = "ventas-historicas/api/historico/";
 
+// ----------------------------
+// Helpers
+// ----------------------------
 function buildParams(params: Record<string, any>) {
   const clean: Record<string, any> = {};
   Object.entries(params).forEach(([k, v]) => {
@@ -53,6 +56,9 @@ function buildParams(params: Record<string, any>) {
   return clean;
 }
 
+// ----------------------------
+// Fetch con cliente ngrok
+// ----------------------------
 export async function fetchHistorico(params: {
   group_by: GroupBy;
   granularity?: Granularity;
@@ -62,14 +68,17 @@ export async function fetchHistorico(params: {
   offset?: number;
 }): Promise<HistoricoResponse> {
   const query = buildParams(params);
+
   try {
-    const { data } = await api.get<HistoricoResponse>(EP_RECOMMENDED, {
+    // 🔹 Usa siempre ngrokApi
+    const { data } = await ngrokApi.get<HistoricoResponse>(EP_RECOMMENDED, {
       params: query,
     });
     return data;
   } catch (err: any) {
+    // Si el endpoint principal falla, intenta con el legado (también vía ngrok)
     if (err?.response?.status === 404) {
-      const { data } = await api.get<HistoricoResponse>(EP_LEGACY, {
+      const { data } = await ngrokApi.get<HistoricoResponse>(EP_LEGACY, {
         params: query,
       });
       return data;

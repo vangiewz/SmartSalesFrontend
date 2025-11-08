@@ -2,12 +2,18 @@
 import axios from "axios";
 
 // Alterna manualmente entre local y producción
-const USE_PROD = true; // Cambia a true para producción
+const USE_PROD = false; // Cambia a true para producción
 const BASE_URLS = {
   local: "http://127.0.0.1:8000/api/",
   prod: "https://smartsalesbackend.onrender.com/api/",
 };
 
+// ❗️NUEVO: URL fija de ngrok para la página especial
+const NGROK_URL = "https://daryl-draftable-overdogmatically.ngrok-free.dev/api/";
+
+// ============================
+// Cliente general (igual que antes)
+// ============================
 export const api = axios.create({
   baseURL: USE_PROD ? BASE_URLS.prod : BASE_URLS.local,
   withCredentials: false, // no usamos cookies; tokens por header
@@ -43,6 +49,45 @@ api.interceptors.response.use(
       // si quieres, limpia tokens aquí:
       // localStorage.removeItem("access_token");
       // localStorage.removeItem("refresh_token");
+    }
+    return Promise.reject(err);
+  }
+);
+
+// ============================
+// NUEVO: Cliente especial SOLO para ngrok
+// ============================
+export const ngrokApi = axios.create({
+  baseURL: NGROK_URL,          // <- siempre ngrok, no depende de USE_PROD
+  withCredentials: false,
+});
+
+// Reutilizamos la misma lógica de token
+ngrokApi.interceptors.request.use((config) => {
+  const url = String(config.url || "");
+  const isPublic =
+    url.startsWith("login/") ||
+    url.startsWith("register/") ||
+    url.startsWith("password-reset/");
+
+  if (!isPublic) {
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("access_token")
+        : null;
+
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+
+ngrokApi.interceptors.response.use(
+  (r) => r,
+  (err) => {
+    const status = err?.response?.status;
+    if (status === 401 || status === 403) {
+      // mismo manejo si querés
     }
     return Promise.reject(err);
   }
