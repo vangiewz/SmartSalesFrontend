@@ -27,6 +27,7 @@ import ModeloPrediccion from './pages/ConfigModeloPrediccion'
 import IAdashboard from './pages/DashboardInteligenciaArtificialPage'
 import Bitacora from './pages/BitacoraAuditoria'
 import Administracion from './pages/AdministracionPage'
+import ConfigParam from './pages/ConfigParametroNegocioPage'
 
 // Páginas de garantías
 import GarantiaPage from './pages/garantia'
@@ -87,6 +88,15 @@ export default function App() {
           element={
             <ProtectedRoute>
               <AccesosCuentasPage />
+            </ProtectedRoute>
+          }
+        />
+
+          <Route
+          path="/config-param"
+          element={
+            <ProtectedRoute>
+              <ConfigParam />
             </ProtectedRoute>
           }
         />

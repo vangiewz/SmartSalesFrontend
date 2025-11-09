@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Settings } from "lucide-react";
 
 import ProtectedLayout from "../components/ProtectedLayout";
 import LoadingSpinner from "../components/common/LoadingSpinner";
@@ -8,7 +8,7 @@ import { useAllowedRoles } from "../hooks/useAllowedRoles";
 export default function AdministracionPage() {
   // Permitir acceso a Admin, Analista y Vendedor
   const { isAllowed, loading } = useAllowedRoles(["admin", "vendedor", "analista"]);
-  // Mostrar tarjeta solo para Admin
+  // Mostrar tarjetas especiales solo para Admin
   const { isAllowed: isAdmin, loading: adminLoading } = useAllowedRoles(["admin"]);
 
   if (loading || adminLoading) {
@@ -61,7 +61,7 @@ export default function AdministracionPage() {
 
         {/* Grid de opciones */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {/* Card visible SOLO para Admin */}
+          {/* Card: Bitácora del Sistema (solo Admin) */}
           {isAdmin && (
             <Link
               to="/bitacora"
@@ -87,7 +87,38 @@ export default function AdministracionPage() {
             </Link>
           )}
 
-          {/* Placeholder si no hay más opciones */}
+          {/* Card: Configurar parámetros del negocio (UC-32, solo Admin) */}
+          {isAdmin && (
+            <Link
+              to="/config-param"
+              className="group bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl border-2 border-emerald-200 p-4 sm:p-6 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200"
+            >
+              <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
+                  <Settings className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold text-emerald-900 flex-1 min-w-0">
+                  Configurar parámetros del negocio
+                </h2>
+              </div>
+              <p className="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">
+                Ajusta umbrales de stock, condiciones comerciales, parámetros de IA y notificaciones
+                globales del sistema SmartSales365.
+              </p>
+              <div className="text-[11px] sm:text-xs text-emerald-700 mb-2">
+                • Solo Administrador &nbsp;• Validaciones en tiempo real &nbsp;• Mensajes de guardado
+                exitoso
+              </div>
+              <div className="flex items-center text-emerald-700 font-semibold group-hover:gap-3 transition-all text-sm sm:text-base">
+                <span>Abrir configuración global</span>
+                <span className="text-lg sm:text-xl group-hover:translate-x-1 transition-transform">
+                  →
+                </span>
+              </div>
+            </Link>
+          )}
+
+          {/* Placeholder si no hay herramientas de Admin visibles */}
           {!isAdmin && (
             <div className="bg-white/80 backdrop-blur-lg rounded-2xl sm:rounded-3xl border-2 border-dashed border-indigo-300 p-4 sm:p-6 flex items-center justify-center">
               <div className="text-center">
@@ -95,7 +126,8 @@ export default function AdministracionPage() {
                   🔐 No hay herramientas adicionales disponibles
                 </p>
                 <p className="text-indigo-400 text-xs sm:text-sm">
-                  Solo los administradores pueden ver herramientas de auditoría.
+                  Solo los administradores pueden ver herramientas avanzadas de configuración y
+                  auditoría.
                 </p>
               </div>
             </div>
