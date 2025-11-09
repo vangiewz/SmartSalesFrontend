@@ -25,7 +25,8 @@ import GestionCliente from './pages/GestionClientes'
 import HistoricoVentas from './pages/HistoricoVentas'
 import ModeloPrediccion from './pages/ConfigModeloPrediccion'
 import IAdashboard from './pages/DashboardInteligenciaArtificialPage'
-
+import Bitacora from './pages/BitacoraAuditoria'
+import Administracion from './pages/AdministracionPage'
 
 // Páginas de garantías
 import GarantiaPage from './pages/garantia'
@@ -55,6 +56,15 @@ export default function App() {
         />
 
           <Route
+          path="/administracion"
+          element={
+            <ProtectedRoute>
+              <Administracion />
+            </ProtectedRoute>
+          }
+        />
+
+          <Route
           path="/IADashboard"
           element={
             <ProtectedRoute>
@@ -63,7 +73,14 @@ export default function App() {
           }
         />
           
-
+         <Route
+          path="/bitacora"
+          element={
+            <ProtectedRoute>
+              <Bitacora/>
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/accesos-cuentas"

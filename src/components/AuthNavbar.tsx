@@ -46,6 +46,7 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
 
   const canSeeReportes = hasAnyRole(['admin', 'vendedor', 'analista']);
   const canSeeIA = hasAnyRole(['admin', 'analista']); // 👈 NUEVO: solo admin y analista
+  const canSeeAdministracion = hasAnyRole(['admin', 'vendedor', 'analista']);
 
   // Paleta y glassmorphism
   const sidebarBase =
@@ -167,6 +168,26 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                     Gestión Comercial
                   </NavLink>
                 </li>
+
+                                {/* ADMIN, VENDEDOR o ANALISTA: Administración */}
+                {canSeeAdministracion && (
+                  <li>
+                    <NavLink
+                      to="/administracion"
+                      className={({ isActive }) =>
+                        `flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${
+                          isActive
+                            ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg scale-105'
+                            : 'text-purple-900 hover:bg-indigo-200/40 hover:text-indigo-800 hover:scale-105'
+                        }`
+                      }
+                    >
+                      <ShieldCheck className="h-6 w-6" />
+                      Administración
+                    </NavLink>
+                  </li>
+                )}
+
 
                 <li>
                   <NavLink
@@ -333,6 +354,26 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                   Gestión Comercial
                 </NavLink>
               </li>
+
+                            {/* ADMIN, VENDEDOR o ANALISTA: Administración */}
+              {canSeeAdministracion && (
+                <li>
+                  <NavLink
+                    to="/administracion"
+                    className={({ isActive }) =>
+                      `flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${
+                        isActive
+                          ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg scale-105'
+                          : 'text-purple-900 hover:bg-indigo-200/40 hover:text-indigo-800 hover:scale-105'
+                      }`
+                    }
+                  >
+                    <ShieldCheck className="h-6 w-6" />
+                    Administración
+                  </NavLink>
+                </li>
+              )}
+
 
               <li>
                 <NavLink
