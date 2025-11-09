@@ -28,6 +28,7 @@ import IAdashboard from './pages/DashboardInteligenciaArtificialPage'
 import Bitacora from './pages/BitacoraAuditoria'
 import Administracion from './pages/AdministracionPage'
 import ConfigParam from './pages/ConfigParametroNegocioPage'
+import ApiDoc from './pages/ApiDocumentacionPage'
 
 // Páginas de garantías
 import GarantiaPage from './pages/garantia'
@@ -61,6 +62,15 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Administracion />
+            </ProtectedRoute>
+          }
+        />
+
+          <Route
+          path="/api-doc"
+          element={
+            <ProtectedRoute>
+              <ApiDoc />
             </ProtectedRoute>
           }
         />

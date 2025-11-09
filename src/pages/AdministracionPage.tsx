@@ -1,17 +1,27 @@
 import { Link } from "react-router-dom";
-import { ShieldCheck, Settings } from "lucide-react";
+import { ShieldCheck, Settings, Code2 } from "lucide-react";
 
 import ProtectedLayout from "../components/ProtectedLayout";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import { useAllowedRoles } from "../hooks/useAllowedRoles";
 
 export default function AdministracionPage() {
-  // Permitir acceso a Admin, Analista y Vendedor
-  const { isAllowed, loading } = useAllowedRoles(["admin", "vendedor", "analista"]);
-  // Mostrar tarjetas especiales solo para Admin
+  // Permitir acceso a Admin, Analista, Vendedor y Desarrollador
+  const { isAllowed, loading } = useAllowedRoles([
+    "admin",
+    "vendedor",
+    "analista",
+    "desarrollador",
+  ]);
+  // Tarjetas solo Admin
   const { isAllowed: isAdmin, loading: adminLoading } = useAllowedRoles(["admin"]);
+  // Tarjeta UC-34: Admin / Desarrollador
+  const { isAllowed: canSeeApiDocs, loading: apiDocsLoading } = useAllowedRoles([
+    "admin",
+    "desarrollador",
+  ]);
 
-  if (loading || adminLoading) {
+  if (loading || adminLoading || apiDocsLoading) {
     return (
       <ProtectedLayout>
         <div className="min-h-[calc(100vh-200px)] flex items-center justify-center">
@@ -30,8 +40,8 @@ export default function AdministracionPage() {
               ⚠️ No tienes acceso al panel de administración
             </p>
             <p className="text-yellow-700 text-xs sm:text-sm">
-              Esta sección está limitada a usuarios con roles de Administrador, Vendedor o Analista.
-              Si crees que esto es un error, contacta al administrador del sistema.
+              Esta sección está limitada a usuarios con roles de Administrador, Vendedor, Analista
+              o Desarrollador. Si crees que esto es un error, contacta al administrador del sistema.
             </p>
           </div>
         </div>
@@ -53,7 +63,8 @@ export default function AdministracionPage() {
                 Panel de Administración
               </h1>
               <p className="text-gray-700 text-xs sm:text-sm lg:text-base">
-                Accede a herramientas de auditoría y gestión del sistema
+                Accede a herramientas de auditoría, configuración y documentación técnica del
+                sistema
               </p>
             </div>
           </div>
@@ -118,16 +129,47 @@ export default function AdministracionPage() {
             </Link>
           )}
 
-          {/* Placeholder si no hay herramientas de Admin visibles */}
-          {!isAdmin && (
+          {/* Card: Consultar API documentada (UC-34, Admin / Desarrollador) */}
+          {canSeeApiDocs && (
+            <Link
+              to="/api-doc"
+              className="group bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl border-2 border-sky-200 p-4 sm:p-6 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200"
+            >
+              <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                <div className="bg-gradient-to-br from-sky-500 to-blue-600 p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
+                  <Code2 className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold text-sky-900 flex-1 min-w-0">
+                  API documentada (Swagger)
+                </h2>
+              </div>
+              <p className="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">
+                Consulta la documentación técnica de los endpoints REST y prueba los servicios del
+                backend de SmartSales365.
+              </p>
+              <div className="text-[11px] sm:text-xs text-sky-700 mb-2">
+                • Roles: Administrador / Desarrollador &nbsp;• Endpoints agrupados por módulo &nbsp;•
+                Simulación Swagger UI
+              </div>
+              <div className="flex items-center text-sky-700 font-semibold group-hover:gap-3 transition-all text-sm sm:text-base">
+                <span>Abrir documentación API</span>
+                <span className="text-lg sm:text-xl group-hover:translate-x-1 transition-transform">
+                  →
+                </span>
+              </div>
+            </Link>
+          )}
+
+          {/* Placeholder si no hay herramientas especiales visibles */}
+          {!(isAdmin || canSeeApiDocs) && (
             <div className="bg-white/80 backdrop-blur-lg rounded-2xl sm:rounded-3xl border-2 border-dashed border-indigo-300 p-4 sm:p-6 flex items-center justify-center">
               <div className="text-center">
                 <p className="text-indigo-600 text-base sm:text-lg font-semibold mb-1 flex items-center justify-center gap-2">
                   🔐 No hay herramientas adicionales disponibles
                 </p>
                 <p className="text-indigo-400 text-xs sm:text-sm">
-                  Solo los administradores pueden ver herramientas avanzadas de configuración y
-                  auditoría.
+                  Solo los administradores o desarrolladores pueden ver herramientas avanzadas de
+                  configuración, auditoría y documentación técnica.
                 </p>
               </div>
             </div>
