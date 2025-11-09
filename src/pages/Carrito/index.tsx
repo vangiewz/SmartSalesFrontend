@@ -28,18 +28,16 @@ export default function CarritoPage() {
         return;
       }
 
-      // Fetch product details
-      const response = await api.get('listadoproductos/', {
-        params: {
-          page_size: 100,
-        },
-      });
-
-      const allProducts = response.data.results || [];
-      const cartProducts = allProducts.filter((p: ProductoCatalogo) =>
-        productIds.includes(p.id)
+      // ✅ NUEVO: pedimos al backend solo los productos del carrito
+      const idsParam = productIds.join(',');
+      const response = await api.get<ProductoCatalogo[]>(
+        'carrito-voz/productos-carrito/',
+        {
+          params: { ids: idsParam },
+        }
       );
-      setProductos(cartProducts);
+
+      setProductos(response.data);
     } catch (error) {
       console.error('Error al cargar productos del carrito:', error);
       toast.error('Error al cargar el carrito');
@@ -150,7 +148,7 @@ export default function CarritoPage() {
             <p className="text-gray-500 mb-6">Agrega productos desde el catálogo</p>
             <button
               onClick={() => navigate('/inicio')}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duración-200"
             >
               <Home className="h-5 w-5" />
               Ir al Catálogo
@@ -182,7 +180,7 @@ export default function CarritoPage() {
 
           <button
             onClick={handleLimpiar}
-            className="flex items-center gap-2 bg-red-100 text-red-600 px-6 py-3 rounded-xl font-semibold hover:bg-red-200 transition-all duration-200"
+            className="flex items-center gap-2 bg-red-100 text-red-600 px-6 py-3 rounded-xl font-semibold hover:bg-red-200 transition-all duración-200"
           >
             <Trash2 className="h-5 w-5" />
             Vaciar Carrito
@@ -200,7 +198,7 @@ export default function CarritoPage() {
               return (
                 <div
                   key={producto.id}
-                  className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-all duration-200"
+                  className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-all duración-200"
                 >
                   <div className="flex flex-col sm:flex-row gap-4">
                     {/* Imagen */}
@@ -242,7 +240,7 @@ export default function CarritoPage() {
                     <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-between w-full sm:w-auto">
                       <button
                         onClick={() => handleEliminar(producto.id)}
-                        className="text-red-600 hover:bg-red-100 p-2 rounded-lg transition-all duration-200 order-2 sm:order-1"
+                        className="text-red-600 hover:bg-red-100 p-2 rounded-lg transition-all duración-200 order-2 sm:order-1"
                       >
                         <Trash2 className="h-5 w-5" />
                       </button>
@@ -250,7 +248,7 @@ export default function CarritoPage() {
                       <div className="flex items-center gap-2 order-1 sm:order-2">
                         <button
                           onClick={() => handleUpdateCantidad(producto.id, cantidad - 1)}
-                          className="bg-purple-100 text-purple-600 p-2 rounded-lg hover:bg-purple-200 transition-all duration-200"
+                          className="bg-purple-100 text-purple-600 p-2 rounded-lg hover:bg-purple-200 transition-all duración-200"
                         >
                           <Minus className="h-4 w-4" />
                         </button>
@@ -260,7 +258,7 @@ export default function CarritoPage() {
                         <button
                           onClick={() => handleUpdateCantidad(producto.id, cantidad + 1)}
                           disabled={cantidad >= producto.stock}
-                          className="bg-purple-100 text-purple-600 p-2 rounded-lg hover:bg-purple-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="bg-purple-100 text-purple-600 p-2 rounded-lg hover:bg-purple-200 transition-all duración-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <Plus className="h-4 w-4" />
                         </button>
@@ -309,7 +307,7 @@ export default function CarritoPage() {
 
               <button
                 onClick={() => navigate('/checkout')}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-4 rounded-xl font-bold text-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-4 rounded-xl font-bold text-lg hover:shadow-xl hover:scale-105 transición-all duración-200"
               >
                 Proceder al Pago
                 <ArrowRight className="h-5 w-5" />
@@ -317,7 +315,7 @@ export default function CarritoPage() {
 
               <button
                 onClick={() => navigate('/inicio')}
-                className="w-full flex items-center justify-center gap-2 bg-white text-purple-600 px-6 py-3 rounded-xl font-semibold border-2 border-purple-200 hover:bg-purple-50 transition-all duration-200 mt-3"
+                className="w-full flex items-center justify-center gap-2 bg-white text-purple-600 px-6 py-3 rounded-xl font-semibold border-2 border-purple-200 hover:bg-purple-50 transición-all duración-200 mt-3"
               >
                 <Home className="h-5 w-5" />
                 Seguir Comprando
