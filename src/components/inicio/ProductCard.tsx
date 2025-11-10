@@ -1,7 +1,7 @@
 // src/components/inicio/ProductCard.tsx
 import { ShoppingCart, Sparkles, Package, User } from 'lucide-react'
 import type { ProductoCatalogo } from '../../types/catalogo'
-import { formatearPrecio, getImagenUrl } from '../../services/catalogoApi'
+import { formatearPrecio } from '../../services/catalogoApi'
 import { agregarAlCarrito } from '../../utils/carrito'
 
 interface ProductCardProps {
@@ -24,13 +24,14 @@ export function ProductCard({ producto, onAddToCart }: ProductCardProps) {
   return (
     <div className="group bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-purple-100">
       {/* Imagen del producto */}
+               {/* Imagen + badges */}
       <div className="relative h-64 sm:h-72 overflow-hidden bg-gradient-to-br from-purple-100 to-pink-100">
-        <img 
-          src={getImagenUrl(producto.imagen_url)} 
+        <img
+          src={producto.imagen_url || '/placeholder-product.png'}
           alt={producto.nombre}
-          className="w-full h-full object-contain group-hover:scale-105 transition-all duration-500"
+          className="w-full h-48 object-contain rounded-t-2xl bg-gradient-to-br from-purple-50 to-pink-50"
         />
-        
+
         {/* Badge agotado */}
         {isAgotado && (
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
@@ -39,21 +40,21 @@ export function ProductCard({ producto, onAddToCart }: ProductCardProps) {
             </span>
           </div>
         )}
-        
+
         {/* Badge disponible */}
         {!isAgotado && (
           <div className="absolute top-2 right-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-1 rounded-lg text-xs font-bold shadow-lg">
             ¡Disponible!
           </div>
         )}
-        
+
         {/* Stock badge */}
         <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-bold text-purple-700 shadow-md">
           <Package className="inline-block w-3 h-3 mr-1" />
           {producto.stock}
         </div>
       </div>
-      
+
       {/* Contenido de la card */}
       <div className="p-3 sm:p-4">
         {/* Marca */}

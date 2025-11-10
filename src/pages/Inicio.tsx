@@ -1,7 +1,18 @@
 // src/pages/InicioPage.tsx (o src/pages/Inicio/index.tsx)
 
 import ProtectedLayout from '../components/ProtectedLayout'
-import { Search, Filter, Sparkles, Package, Mic, MicOff, ChevronLeft, ChevronRight } from 'lucide-react'
+import ProtectedLayout from '../components/ProtectedLayout'
+import {
+  Search,
+  Filter,
+  Sparkles,
+  Package,
+  Mic,
+  MicOff,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react'
+
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { useCatalogProducts } from '../hooks/useCatalogProducts'
@@ -46,6 +57,9 @@ export default function InicioPage() {
   const [escuchando, setEscuchando] = useState(false)
   const [vozDisponible, setVozDisponible] = useState(false)
 
+  // 👉 estado para input de página
+  const [pageInput, setPageInput] = useState('1')
+
   const {
     productos,
     loading,
@@ -54,13 +68,19 @@ export default function InicioPage() {
     currentPage,
     totalPages,
     updateFilters,
-    changePage
+    changePage,
   } = useCatalogProducts({ page_size: 20 })
+
 
   const {
     filtros,
     loading: loadingFilters
   } = useCatalogFilters()
+
+  // Mantener el input sincronizado con la página actual
+  useEffect(() => {
+    setPageInput(String(currentPage))
+  }, [currentPage])
 
   // Detectar si el navegador soporta reconocimiento de voz
   useEffect(() => {
@@ -207,6 +227,35 @@ export default function InicioPage() {
     recognition.start()
   }
 
+  // ================= PAGINACIÓN (BACKEND) =================
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      changePage(currentPage - 1)
+    }
+  }
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      changePage(currentPage + 1)
+    }
+  }
+
+  const handleGoToPage = () => {
+    const pageNumber = Number(pageInput)
+    if (Number.isNaN(pageNumber)) {
+      toast.error('Ingresa un número de página válido.')
+      return
+    }
+    if (pageNumber < 1 || pageNumber > totalPages) {
+      toast.error(`Ingresa un número entre 1 y ${totalPages}.`)
+      return
+    }
+    if (pageNumber !== currentPage) {
+      changePage(pageNumber)
+    }
+  }
+
   // ================= RENDER =================
 
   if (loading || loadingFilters) {
@@ -246,7 +295,9 @@ export default function InicioPage() {
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-1 sm:mb-2">
             Catálogo de Productos
           </h1>
-          <p className="text-sm sm:text-base text-gray-700">Descubre nuestros electrodomésticos de alta calidad</p>
+          <p className="text-sm sm:text-base text-gray-700">
+            Descubre nuestros electrodomésticos de alta calidad
+          </p>
         </div>
 
         {/* Search and Filter */}
@@ -284,8 +335,10 @@ export default function InicioPage() {
                   className="w-full px-3 sm:px-4 py-2 sm:py-2.5 lg:py-3 text-sm sm:text-base border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white font-semibold text-purple-700"
                 >
                   <option value="">Todas las Marcas</option>
-                  {filtros?.marcas.map(marca => (
-                    <option key={marca.id} value={marca.id}>{marca.nombre}</option>
+                  {filtros?.marcas.map((marca) => (
+                    <option key={marca.id} value={marca.id}>
+                      {marca.nombre}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -298,8 +351,10 @@ export default function InicioPage() {
                   className="w-full px-3 sm:px-4 py-2 sm:py-2.5 lg:py-3 text-sm sm:text-base border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white font-semibold text-purple-700"
                 >
                   <option value="">Todos los Tipos</option>
-                  {filtros?.tipos.map(tipo => (
-                    <option key={tipo.id} value={tipo.id}>{tipo.nombre}</option>
+                  {filtros?.tipos.map((tipo) => (
+                    <option key={tipo.id} value={tipo.id}>
+                      {tipo.nombre}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -352,9 +407,9 @@ export default function InicioPage() {
           </div>
         </div>
 
-        {/* Products Grid */}
+        {/* Products Grid (página actual desde el backend) */}
         <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-          {productos.map(producto => (
+          {productos.map((producto) => (
             <ProductCard
               key={producto.id}
               producto={producto}
@@ -366,7 +421,75 @@ export default function InicioPage() {
         {productos.length === 0 && (
           <div className="text-center py-12 sm:py-16">
             <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 text-base sm:text-lg">No se encontraron productos con esos criterios</p>
+            <p className="text-gray-500 text-base sm:text-lg">
+              No se encontraron productos con esos criterios
+            </p>
+          </div>
+        )}
+
+        {/* Controles de paginación (backend) con input de página */}
+        {total > 0 && totalPages > 1 && (
+          <div className="flex flex-col gap-3 sm:gap-4 mt-6">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+              <button
+                type="button"
+                onClick={handlePrevPage}
+                disabled={currentPage === 1}
+                className={`inline-flex items-center gap-2 px-4 py-2 border-2 rounded-xl text-sm sm:text-base font-semibold transition-all ${
+                  currentPage === 1
+                    ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                    : 'border-purple-300 text-purple-700 hover:bg-purple-50'
+                }`}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Anterior
+              </button>
+
+              <span className="text-sm sm:text-base text-gray-600">
+                Página{' '}
+                <span className="font-semibold text-purple-700">{currentPage}</span>{' '}
+                de{' '}
+                <span className="font-semibold text-purple-700">{totalPages}</span>{' '}
+                · {total} producto(s)
+              </span>
+
+              <button
+                type="button"
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm sm:text-base font-semibold transition-all ${
+                  currentPage === totalPages
+                    ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg hover:from-purple-700 hover:to-pink-600 hover:shadow-xl'
+                }`}
+              >
+                Siguiente
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Selector de página exacta */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
+              <span className="text-sm sm:text-base text-gray-600">
+                Ir a la página:
+              </span>
+              <input
+                type="number"
+                min={1}
+                max={totalPages}
+                value={pageInput}
+                onChange={(e) => setPageInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleGoToPage()}
+                className="w-20 px-3 py-1.5 border-2 border-purple-200 rounded-lg text-sm sm:text-base text-center focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              />
+              <button
+                type="button"
+                onClick={handleGoToPage}
+                className="px-4 py-1.5 text-sm sm:text-base font-semibold rounded-lg bg-white border-2 border-purple-300 text-purple-700 hover:bg-purple-50 transition-all"
+              >
+                Ir
+              </button>
+            </div>
           </div>
         )}
 

@@ -1,5 +1,4 @@
-// src/pages/Carrito/index.tsx
-
+import { getProductoImageUrl } from "../../utils/getProductoImageUrl";
 import { useState, useEffect } from 'react';
 import ProtectedLayout from '../../components/ProtectedLayout';
 import { ShoppingCart, Plus, Minus, Trash2, Package, ArrowRight, Home } from 'lucide-react';
@@ -7,7 +6,6 @@ import { getCarrito, actualizarCantidad, eliminarDelCarrito, limpiarCarrito } fr
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { api } from '../../lib/client';
-import { getImagenUrl } from '../../services/catalogoApi';
 import type { ProductoCatalogo } from '../../types/catalogo';
 
 export default function CarritoPage() {
@@ -29,7 +27,6 @@ export default function CarritoPage() {
         return;
       }
 
-      // ✅ NUEVO: pedimos al backend solo los productos del carrito
       const idsParam = productIds.join(',');
       const response = await api.get<ProductoCatalogo[]>(
         'carrito-voz/productos-carrito/',
@@ -38,12 +35,13 @@ export default function CarritoPage() {
         }
       );
 
-      console.log('🛒 Productos del carrito desde backend:', response.data);
+      console.log('🛒 [Carrito] Productos recibidos del backend:', response.data);
       console.log('🛒 Primer producto imagen_url:', response.data[0]?.imagen_url);
+      setProductos(response.data);
 
       setProductos(response.data);
     } catch (error) {
-      console.error('Error al cargar productos del carrito:', error);
+      console.error('❌ Error al cargar productos del carrito:', error);
       toast.error('Error al cargar el carrito');
     } finally {
       setLoading(false);
@@ -63,6 +61,23 @@ export default function CarritoPage() {
     };
   }, []);
 
+  // 👇 Log de depuración cada vez que cambia la lista de productos
+  useEffect(() => {
+    if (!loading && productos.length > 0) {
+      console.groupCollapsed("🧩 DEBUG Carrito - Productos cargados");
+      productos.forEach((p, i) => {
+        console.log(`📦 Producto #${i + 1}:`, {
+          id: p.id,
+          nombre: p.nombre,
+          imagen_url: (p as any).imagen_url,
+          imagen_key: (p as any).imagen_key,
+          url_final: getProductoImageUrl(p),
+        });
+      });
+      console.groupEnd();
+    }
+  }, [productos, loading]);
+
   const handleUpdateCantidad = (id: number, newCantidad: number) => {
     const producto = productos.find((p) => p.id === id);
     if (!producto) return;
@@ -73,9 +88,7 @@ export default function CarritoPage() {
     }
 
     if (newCantidad > producto.stock) {
-      toast.error(`Solo hay ${producto.stock} unidades disponibles`, {
-        icon: '⚠️',
-      });
+      toast.error(`Solo hay ${producto.stock} unidades disponibles`, { icon: '⚠️' });
       return;
     }
 
@@ -253,15 +266,20 @@ export default function CarritoPage() {
                   <div className="flex flex-col sm:flex-row gap-4">
                     {/* Imagen */}
                     <div className="relative w-full sm:w-24 h-32 sm:h-24 flex-shrink-0 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl overflow-hidden mx-auto sm:mx-0">
-                      <img
-                        src={getImagenUrl(producto.imagen_url)}
-                        alt={producto.nombre}
-                        className="w-full h-full object-contain"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/placeholder-product.png';
-                        }}
-                      />
+                     <img
+                src={getProductoImageUrl(producto)}
+                alt={producto.nombre}
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  console.warn(
+                    `⚠️ Imagen rota para ID ${producto.id}:`,
+                    getProductoImageUrl(producto)
+                  );
+                  (e.target as HTMLImageElement).src = '/placeholder-product.png';
+                }}
+              />      
+
+
                       {isAgotado && (
                         <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                           <span className="text-white text-xs font-bold">Agotado</span>
@@ -284,7 +302,6 @@ export default function CarritoPage() {
                         </span>
                       </div>
 
-                      {/* Precio */}
                       <p className="text-lg sm:text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                         {formatearPrecio(producto.precio)}
                       </p>
