@@ -30,6 +30,7 @@ import Administracion from './pages/AdministracionPage'
 import ConfigParam from './pages/ConfigParametroNegocioPage'
 import ApiDoc from './pages/ApiDocumentacionPage'
 import ProgamReporte from './pages/ProgramarReportesPage'
+import EditarPerfil from './pages/MiPerfilPage'
 
 // Páginas de garantías
 import GarantiaPage from './pages/garantia'
@@ -63,6 +64,15 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Administracion />
+            </ProtectedRoute>
+          }
+        />
+
+           <Route
+          path="/editar-perfil"
+          element={
+            <ProtectedRoute>
+              <EditarPerfil />
             </ProtectedRoute>
           }
         />

@@ -10,7 +10,7 @@ import {
   Shield,
   Package,
   Brain,
-  ShieldCheck, // 👈 NUEVO para Garantías
+  ShieldCheck,
 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -26,7 +26,6 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
   const { cantidadTotal } = useCarrito();
   const navigate = useNavigate();
 
-  // Helper: permitir Reportes a admin, vendedor y analista (por flags o nombres en user.roles)
   const normalize = (s: string) =>
     String(s || '')
       .toLowerCase()
@@ -36,7 +35,9 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
   const hasAnyRole = (names: string[]) => {
     const allowed = names.map(normalize);
     const userRoles = Array.isArray((user as any)?.roles) ? (user as any).roles : [];
-    const byName = userRoles.map((r: string) => normalize(r)).some((r: string) => allowed.includes(r));
+    const byName = userRoles
+      .map((r: string) => normalize(r))
+      .some((r: string) => allowed.includes(r));
     const byFlag =
       (allowed.includes('admin') && (user as any)?.is_admin) ||
       (allowed.includes('vendedor') && (user as any)?.is_vendedor) ||
@@ -45,10 +46,9 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
   };
 
   const canSeeReportes = hasAnyRole(['admin', 'vendedor', 'analista']);
-  const canSeeIA = hasAnyRole(['admin', 'analista']); // 👈 NUEVO: solo admin y analista
+  const canSeeIA = hasAnyRole(['admin', 'analista']);
   const canSeeAdministracion = hasAnyRole(['admin', 'vendedor', 'analista']);
 
-  // Paleta y glassmorphism
   const sidebarBase =
     'sticky top-0 left-0 h-screen w-72 bg-gradient-to-br from-purple-700/80 via-purple-400/60 to-pink-300/70 shadow-2xl backdrop-blur-xl z-50 flex flex-col border-r border-purple-200/30 transition-transform duration-300';
 
@@ -67,9 +67,17 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
     }
   };
 
+  // 👉 Ir a la página de edición de perfil
+  const irAEditarPerfil = () => {
+    navigate('/editar-perfil'); // asegúrate de tener esta ruta apuntando a MiPerfilPage
+    if (!isDesktop) {
+      setOpen(false); // cerrar sidebar en móvil
+    }
+  };
+
   return (
     <>
-      {/* Botón menú móvil, siempre fijo al viewport */}
+      {/* Botón menú móvil */}
       {!isDesktop && !open && (
         <button
           className="fixed bottom-6 left-6 z-[100] bg-gradient-to-br from-purple-600 to-pink-500 p-3 rounded-full shadow-xl text-white hover:scale-110 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all"
@@ -98,19 +106,28 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
               </button>
             </div>
 
-            {/* Logo y usuario */}
+            {/* Logo y usuario (MÓVIL) */}
             <div className="flex flex-col items-center py-8 px-4 border-b border-purple-200/20">
-              <div className="relative mb-2">
-                <span className="absolute -top-2 -right-2 animate-pulse">
-                  <Sparkles className="h-5 w-5 text-yellow-300" />
-                </span>
-                <div className="bg-gradient-to-tr from-purple-400 via-pink-300 to-purple-600 rounded-full p-2 shadow-lg">
-                  <User className="h-12 w-12 text-white" />
+              <button
+                type="button"
+                onClick={irAEditarPerfil}
+                className="flex flex-col items-center focus:outline-none group"
+              >
+                <div className="relative mb-2 cursor-pointer">
+                  <span className="absolute -top-2 -right-2 animate-pulse">
+                    <Sparkles className="h-5 w-5 text-yellow-300" />
+                  </span>
+                  <div className="bg-gradient-to-tr from-purple-400 via-pink-300 to-purple-600 rounded-full p-2 shadow-lg group-hover:scale-105 transition-transform">
+                    <User className="h-12 w-12 text-white" />
+                  </div>
                 </div>
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-purple-700 to-pink-500 bg-clip-text text-transparent mb-1">
-                {user?.nombre || user?.correo || 'Usuario'}
-              </span>
+                <span className="text-xl font-bold bg-gradient-to-r from-purple-700 to-pink-500 bg-clip-text text-transparent mb-1 cursor-pointer group-hover:opacity-90">
+                  {user?.nombre || user?.correo || 'Usuario'}
+                </span>
+                <span className="text-xs text-purple-50/90 group-hover:underline cursor-pointer">
+                  Ver / editar perfil
+                </span>
+              </button>
             </div>
 
             {/* Menú principal (MÓVIL) */}
@@ -157,7 +174,7 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                   <NavLink
                     to="/gestion-comercial"
                     className={({ isActive }) =>
-                      `flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${
+                      `flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duración-150 ${
                         isActive
                           ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg scale-105'
                           : 'text-purple-900 hover:bg-purple-200/40 hover:text-purple-800 hover:scale-105'
@@ -169,7 +186,6 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                   </NavLink>
                 </li>
 
-                                {/* ADMIN, VENDEDOR o ANALISTA: Administración */}
                 {canSeeAdministracion && (
                   <li>
                     <NavLink
@@ -188,7 +204,6 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                   </li>
                 )}
 
-
                 <li>
                   <NavLink
                     to="/garantia"
@@ -205,7 +220,6 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                   </NavLink>
                 </li>
 
-                {/* SOLO ADMIN: Accesos y Cuentas */}
                 {user?.is_admin && (
                   <li>
                     <NavLink
@@ -224,7 +238,6 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                   </li>
                 )}
 
-                {/* ADMIN, VENDEDOR o ANALISTA: Reportes */}
                 {canSeeReportes && (
                   <li>
                     <NavLink
@@ -243,7 +256,6 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                   </li>
                 )}
 
-                {/* ADMIN o ANALISTA: Dashboard IA  */}
                 {canSeeIA && (
                   <li>
                     <NavLink
@@ -276,7 +288,6 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
             </div>
           </aside>
 
-          {/* Fondo para cerrar tocando fuera */}
           <div className="flex-1 bg-black/30" onClick={() => setOpen(false)} />
         </div>
       )}
@@ -284,19 +295,28 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
       {/* Sidebar DESKTOP */}
       {isDesktop && (
         <aside className={sidebarBase} style={{ minWidth: '18rem' }}>
-          {/* Logo y usuario */}
+          {/* Logo y usuario (DESKTOP) */}
           <div className="flex flex-col items-center py-8 px-4 border-b border-purple-200/20">
-            <div className="relative mb-2">
-              <span className="absolute -top-2 -right-2 animate-pulse">
-                <Sparkles className="h-5 w-5 text-yellow-300" />
-              </span>
-              <div className="bg-gradient-to-tr from-purple-400 via-pink-300 to-purple-600 rounded-full p-2 shadow-lg">
-                <User className="h-12 w-12 text-white" />
+            <button
+              type="button"
+              onClick={irAEditarPerfil}
+              className="flex flex-col items-center focus:outline-none group"
+            >
+              <div className="relative mb-2 cursor-pointer">
+                <span className="absolute -top-2 -right-2 animate-pulse">
+                  <Sparkles className="h-5 w-5 text-yellow-300" />
+                </span>
+                <div className="bg-gradient-to-tr from-purple-400 via-pink-300 to-purple-600 rounded-full p-2 shadow-lg group-hover:scale-105 transition-transform">
+                  <User className="h-12 w-12 text-white" />
+                </div>
               </div>
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-700 to-pink-500 bg-clip-text text-transparent mb-1">
-              {user?.nombre || user?.correo || 'Usuario'}
-            </span>
+              <span className="text-xl font-bold bg-gradient-to-r from-purple-700 to-pink-500 bg-clip-text text-transparent mb-1 cursor-pointer group-hover:opacity-90">
+                {user?.nombre || user?.correo || 'Usuario'}
+              </span>
+              <span className="text-xs text-purple-50/90 group-hover:underline cursor-pointer">
+                Ver / editar perfil
+              </span>
+            </button>
           </div>
 
           {/* Menú principal (DESKTOP) */}
@@ -355,7 +375,6 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                 </NavLink>
               </li>
 
-                            {/* ADMIN, VENDEDOR o ANALISTA: Administración */}
               {canSeeAdministracion && (
                 <li>
                   <NavLink
@@ -374,7 +393,6 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                 </li>
               )}
 
-
               <li>
                 <NavLink
                   to="/garantia"
@@ -391,7 +409,6 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                 </NavLink>
               </li>
 
-              {/* SOLO ADMIN: Accesos y Cuentas */}
               {user?.is_admin && (
                 <li>
                   <NavLink
@@ -410,7 +427,6 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                 </li>
               )}
 
-              {/* ADMIN, VENDEDOR o ANALISTA: Reportes */}
               {canSeeReportes && (
                 <li>
                   <NavLink
@@ -429,7 +445,6 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                 </li>
               )}
 
-              {/* ADMIN o ANALISTA: Dashboard IA */}
               {canSeeIA && (
                 <li>
                   <NavLink
