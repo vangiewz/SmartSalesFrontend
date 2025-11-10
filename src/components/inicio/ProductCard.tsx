@@ -25,11 +25,12 @@ export function ProductCard({ producto, onAddToCart }: ProductCardProps) {
     <div className="group bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-purple-100">
       {/* Imagen del producto */}
       <div className="relative h-64 sm:h-72 overflow-hidden bg-gradient-to-br from-purple-100 to-pink-100">
-        <img 
-          src={producto.imagen_url || '/placeholder-product.png'} 
+        <img
+          src={producto.imagen_url || producto.imagen_key || '/placeholder-product.png'}
           alt={producto.nombre}
-          className="w-full h-full object-contain group-hover:scale-105 transition-all duration-500"
+          className="w-full h-48 object-contain rounded-t-2xl bg-gradient-to-br from-purple-50 to-pink-50"
         />
+
         
         {/* Badge agotado */}
         {isAgotado && (
