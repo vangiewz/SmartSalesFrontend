@@ -35,7 +35,10 @@ export default function CarritoPage() {
         }
       );
 
-      console.log("🛒 [Carrito] Productos recibidos del backend:", response.data);
+      console.log('🛒 [Carrito] Productos recibidos del backend:', response.data);
+      console.log('🛒 Primer producto imagen_url:', response.data[0]?.imagen_url);
+      setProductos(response.data);
+
       setProductos(response.data);
     } catch (error) {
       console.error('❌ Error al cargar productos del carrito:', error);
@@ -111,17 +114,63 @@ export default function CarritoPage() {
   };
 
   const handleLimpiar = () => {
-    if (!confirm('¿Estás seguro de vaciar el carrito?')) return;
-    limpiarCarrito();
-    setCarrito({});
-    setProductos([]);
-    toast.success('Carrito vaciado', {
-      icon: '🗑️',
+    toast((t) => (
+      <div className="flex flex-col gap-4 min-w-[280px]">
+        <div className="flex items-center gap-3">
+          <div className="flex-shrink-0 bg-red-100 p-2.5 rounded-xl">
+            <Trash2 className="h-6 w-6 text-red-600" />
+          </div>
+          <div className="flex-1">
+            <p className="font-bold text-gray-900 text-base mb-1">
+              ¿Vaciar el carrito?
+            </p>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Se eliminarán <span className="font-semibold text-gray-900">{productos.length} producto(s)</span>
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex gap-2 justify-end pt-2 border-t border-gray-200">
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all text-sm"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={() => {
+              limpiarCarrito();
+              setCarrito({});
+              setProductos([]);
+              toast.dismiss(t.id);
+              toast.success('Carrito vaciado exitosamente', {
+                icon: '✅',
+                duration: 3000,
+                style: {
+                  borderRadius: '12px',
+                  background: '#10b981',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                },
+              });
+            }}
+            className="px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-semibold hover:from-red-600 hover:to-red-700 hover:shadow-lg transition-all text-sm"
+          >
+            Sí, vaciar
+          </button>
+        </div>
+      </div>
+    ), {
+      duration: Infinity,
       style: {
-        borderRadius: '12px',
-        background: '#9333ea',
-        color: '#fff',
-      },
+        background: 'white',
+        color: '#1f2937',
+        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
+        borderRadius: '16px',
+        padding: '20px',
+        minWidth: '320px',
+        maxWidth: '450px',
+      }
     });
   };
 
@@ -217,15 +266,19 @@ export default function CarritoPage() {
                   <div className="flex flex-col sm:flex-row gap-4">
                     {/* Imagen */}
                     <div className="relative w-full sm:w-24 h-32 sm:h-24 flex-shrink-0 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl overflow-hidden mx-auto sm:mx-0">
-                      <img
-                        src={getProductoImageUrl(producto)}
-                        alt={producto.nombre}
-                        className="w-full h-full object-contain"
-                        onError={(e) => {
-                          console.warn(`⚠️ Imagen rota para ID ${producto.id}:`, getProductoImageUrl(producto));
-                          (e.target as HTMLImageElement).src = "/placeholder-product.png";
-                        }}
-                      />
+                     <img
+                src={getProductoImageUrl(producto)}
+                alt={producto.nombre}
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  console.warn(
+                    `⚠️ Imagen rota para ID ${producto.id}:`,
+                    getProductoImageUrl(producto)
+                  );
+                  (e.target as HTMLImageElement).src = '/placeholder-product.png';
+                }}
+              />      
+
 
                       {isAgotado && (
                         <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
