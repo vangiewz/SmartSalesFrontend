@@ -30,6 +30,7 @@ import Administracion from './pages/AdministracionPage'
 import ConfigParam from './pages/ConfigParametroNegocioPage'
 import ApiDoc from './pages/ApiDocumentacionPage'
 import ProgamReporte from './pages/ProgramarReportesPage'
+import EditarPerfil from './pages/MiPerfilPage'
 
 // Nuevas funcionalidades de venta manual e importar/exportar
 import RegistrarVentaManual from './pages/RegistrarVentaManual'
@@ -67,6 +68,15 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Administracion />
+            </ProtectedRoute>
+          }
+        />
+
+           <Route
+          path="/editar-perfil"
+          element={
+            <ProtectedRoute>
+              <EditarPerfil />
             </ProtectedRoute>
           }
         />

@@ -1,25 +1,16 @@
 // src/types/catalogo.ts
 
 export interface ProductoCatalogo {
-  id: number
-  nombre: string
-  precio: number
-  stock: number
-  tiempogarantia: number
-  imagen_url: string | null
-  marca: {
-    id: number
-    nombre: string
-  }
-  tipoproducto: {
-    id: number
-    nombre: string
-  }
-  vendedor: {
-    id: string
-    nombre: string
-    correo: string
-  }
+  id: number;
+  nombre: string;
+  precio: number;
+  stock: number;
+  tiempogarantia: number;
+  imagen_url: string | null;
+  imagen_key?: string | null;  // 👈 nuevo
+  marca: { id: number; nombre: string };
+  tipoproducto: { id: number; nombre: string };
+  vendedor: { id: string; nombre: string; correo: string };
 }
 
 export interface CatalogoProductosResponse {
