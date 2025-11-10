@@ -32,6 +32,10 @@ import ApiDoc from './pages/ApiDocumentacionPage'
 import ProgamReporte from './pages/ProgramarReportesPage'
 import EditarPerfil from './pages/MiPerfilPage'
 
+// Nuevas funcionalidades de venta manual e importar/exportar
+import RegistrarVentaManual from './pages/RegistrarVentaManual'
+import ImportarExportarCatalogo from './pages/ImportarExportarCatalogo'
+
 // Páginas de garantías
 import GarantiaPage from './pages/garantia'
 import MisGarantiasPage from './pages/garantia/mis'
@@ -239,6 +243,24 @@ export default function App() {
             </ProtectedRoute>
           }
           />
+
+        {/* Nuevas rutas de venta manual e importar/exportar */}
+        <Route
+          path="/registrar-venta-manual"
+          element={
+            <ProtectedRoute>
+              <RegistrarVentaManual />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/importar-exportar-catalogo"
+          element={
+            <ProtectedRoute>
+              <ImportarExportarCatalogo />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Rutas de garantías */}
         <Route
