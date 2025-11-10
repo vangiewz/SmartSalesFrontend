@@ -36,6 +36,10 @@ import EditarPerfil from './pages/MiPerfilPage'
 import RegistrarVentaManual from './pages/RegistrarVentaManual'
 import ImportarExportarCatalogo from './pages/ImportarExportarCatalogo'
 
+// Nuevas páginas de gestión de catálogos
+import GestionTiposProductoPage from './pages/GestionTiposProducto'
+import GestionMarcasPage from './pages/GestionMarcas'
+
 // Páginas de garantías
 import GarantiaPage from './pages/garantia'
 import MisGarantiasPage from './pages/garantia/mis'
@@ -258,6 +262,24 @@ export default function App() {
           element={
             <ProtectedRoute>
               <ImportarExportarCatalogo />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Rutas de gestión de catálogos */}
+        <Route
+          path="/gestion-tipos-producto"
+          element={
+            <ProtectedRoute>
+              <GestionTiposProductoPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/gestion-marcas"
+          element={
+            <ProtectedRoute>
+              <GestionMarcasPage />
             </ProtectedRoute>
           }
         />

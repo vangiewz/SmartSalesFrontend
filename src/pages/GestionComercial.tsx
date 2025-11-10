@@ -174,6 +174,54 @@ export default function GestionComercialPage() {
             </Link>
           )}
 
+          {/* Card: Gestionar Tipos de Producto (Solo Admin) */}
+          {user?.is_admin && (
+            <Link
+              to="/gestion-tipos-producto"
+              className="group bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl border-2 border-blue-200 p-4 sm:p-6 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200"
+            >
+              <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
+                  <Package className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold text-blue-900 flex-1 min-w-0">
+                  Gestionar Tipos de Producto
+                </h2>
+              </div>
+              <p className="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">
+                Administra las categorías y tipos de productos disponibles en el catálogo.
+              </p>
+              <div className="flex items-center text-blue-600 font-semibold group-hover:gap-3 transition-all text-sm sm:text-base">
+                <span>Ver Tipos</span>
+                <span className="text-lg sm:text-xl group-hover:translate-x-1 transition-transform">→</span>
+              </div>
+            </Link>
+          )}
+
+          {/* Card: Gestionar Marcas (Solo Admin) */}
+          {user?.is_admin && (
+            <Link
+              to="/gestion-marcas"
+              className="group bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl border-2 border-rose-200 p-4 sm:p-6 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200"
+            >
+              <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                <div className="bg-gradient-to-br from-rose-500 to-pink-600 p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
+                  <Package className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold text-rose-900 flex-1 min-w-0">
+                  Gestionar Marcas
+                </h2>
+              </div>
+              <p className="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">
+                Administra las marcas de productos disponibles en el sistema.
+              </p>
+              <div className="flex items-center text-rose-600 font-semibold group-hover:gap-3 transition-all text-sm sm:text-base">
+                <span>Ver Marcas</span>
+                <span className="text-lg sm:text-xl group-hover:translate-x-1 transition-transform">→</span>
+              </div>
+            </Link>
+          )}
+
           {/* Placeholder: Más opciones próximamente */}
           <div className="bg-white/80 backdrop-blur-lg rounded-2xl sm:rounded-3xl border-2 border-dashed border-purple-300 p-4 sm:p-6 flex items-center justify-center">
             <div className="text-center">
