@@ -1,7 +1,15 @@
-// src/pages/InicioPage.tsx
-
 import ProtectedLayout from '../components/ProtectedLayout'
-import { Search, Filter, Sparkles, Package, Mic, MicOff, ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  Search,
+  Filter,
+  Sparkles,
+  Package,
+  Mic,
+  MicOff,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUpDown, // 👈 NUEVO para el ordenamiento
+} from 'lucide-react'
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { useCatalogProducts } from '../hooks/useCatalogProducts'
@@ -48,6 +56,11 @@ export default function InicioPage() {
 
   // 👉 estado para input de página
   const [pageInput, setPageInput] = useState('1')
+
+  // 👉 NUEVOS ESTADOS: filtros avanzados
+  const [minPrecio, setMinPrecio] = useState('')
+  const [maxPrecio, setMaxPrecio] = useState('')
+  const [sortOption, setSortOption] = useState<'relevancia' | 'precio_asc' | 'precio_desc' | 'mas_vendidos'>('relevancia')
 
   const {
     productos,
@@ -106,6 +119,52 @@ export default function InicioPage() {
         color: '#fff',
         fontWeight: 'bold',
       },
+    })
+  }
+
+  // ================= NUEVO: FILTROS AVANZADOS =================
+
+  const handleApplyAdvancedFilters = () => {
+    if (minPrecio && maxPrecio && Number(minPrecio) > Number(maxPrecio)) {
+      toast.error('El precio mínimo no puede ser mayor al máximo.')
+      return
+    }
+
+    const filtrosAvanzados: Record<string, any> = {}
+
+    if (minPrecio) {
+      filtrosAvanzados.min_precio = Number(minPrecio)
+    }
+    if (maxPrecio) {
+      filtrosAvanzados.max_precio = Number(maxPrecio)
+    }
+
+    // 👇 Ajusta estos valores a lo que espere tu backend
+    switch (sortOption) {
+      case 'precio_asc':
+        filtrosAvanzados.ordering = 'precio'          // precio de menor a mayor
+        break
+      case 'precio_desc':
+        filtrosAvanzados.ordering = '-precio'         // precio de mayor a menor
+        break
+      case 'mas_vendidos':
+        filtrosAvanzados.ordering = '-ventas_totales' // asumiendo campo ventas_totales
+        break
+      default:
+        filtrosAvanzados.ordering = undefined         // relevancia por defecto
+    }
+
+    updateFilters(filtrosAvanzados)
+  }
+
+  const handleClearAdvancedFilters = () => {
+    setMinPrecio('')
+    setMaxPrecio('')
+    setSortOption('relevancia')
+    updateFilters({
+      min_precio: undefined,
+      max_precio: undefined,
+
     })
   }
 
@@ -291,6 +350,7 @@ export default function InicioPage() {
         {/* Search and Filter */}
         <div className="bg-gradient-to-r from-white to-purple-50 rounded-2xl shadow-xl p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6 lg:mb-8 border-2 border-purple-100">
           <div className="flex flex-col gap-3">
+            {/* Búsqueda */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="flex-1 relative flex items-center gap-2">
                 <div className="flex-1 relative">
@@ -314,6 +374,7 @@ export default function InicioPage() {
               </div>
             </div>
 
+            {/* Filtros básicos: Marca y Tipo */}
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1 flex items-center gap-2">
                 <Filter className="text-purple-500 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
@@ -346,6 +407,73 @@ export default function InicioPage() {
                   ))}
                 </select>
               </div>
+            </div>
+
+            {/* 🔥 Filtros avanzados: rango de precio + ordenamiento */}
+            <div className="flex flex-col sm:flex-row gap-3 mt-1">
+              {/* Rango de precios */}
+              <div className="flex-1 flex flex-col gap-1">
+                <span className="text-xs sm:text-sm font-semibold text-purple-700">
+                  Rango de precio (Bs)
+                </span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={0}
+                    value={minPrecio}
+                    onChange={(e) => setMinPrecio(e.target.value)}
+                    placeholder="Mín."
+                    className="w-full px-3 py-2 border-2 border-purple-200 rounded-xl text-sm sm:text-base focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white"
+                  />
+                  <span className="text-gray-500 text-sm">—</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={maxPrecio}
+                    onChange={(e) => setMaxPrecio(e.target.value)}
+                    placeholder="Máx."
+                    className="w-full px-3 py-2 border-2 border-purple-200 rounded-xl text-sm sm:text-base focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white"
+                  />
+                </div>
+              </div>
+
+              {/* Ordenamiento */}
+              <div className="flex-1 flex flex-col gap-1">
+                <span className="text-xs sm:text-sm font-semibold text-purple-700">
+                  Ordenar por
+                </span>
+                <div className="flex items-center gap-2">
+                  <ArrowUpDown className="h-4 w-4 text-purple-500 flex-shrink-0" />
+                  <select
+                    value={sortOption}
+                    onChange={(e) => setSortOption(e.target.value as any)}
+                    className="w-full px-3 sm:px-4 py-2 sm:py-2.5 lg:py-3 text-sm sm:text-base border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white font-semibold text-purple-700"
+                  >
+                    <option value="relevancia">Relevancia</option>
+                    <option value="precio_asc">Precio: menor a mayor</option>
+                    <option value="precio_desc">Precio: mayor a menor</option>
+                    <option value="mas_vendidos">Productos más vendidos</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Botones aplicar / limpiar filtros avanzados */}
+            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mt-1">
+              <button
+                type="button"
+                onClick={handleClearAdvancedFilters}
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl border-2 border-purple-200 text-purple-600 hover:bg-purple-50 transition-all"
+              >
+                Limpiar filtros
+              </button>
+              <button
+                type="button"
+                onClick={handleApplyAdvancedFilters}
+                className="px-4 sm:px-5 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-lg hover:from-purple-700 hover:to-pink-600 hover:shadow-xl transition-all"
+              >
+                Aplicar filtros avanzados
+              </button>
             </div>
           </div>
         </div>
@@ -481,93 +609,8 @@ export default function InicioPage() {
           </div>
         )}
 
-        {/* Paginación */}
-        {productos.length > 0 && totalPages > 1 && (
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-2xl shadow-lg p-4 sm:p-6 border-2 border-purple-100">
-            <div className="text-sm text-gray-600 font-medium">
-              Mostrando {((currentPage - 1) * 20) + 1} - {Math.min(currentPage * 20, total)} de {total} productos
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => changePage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="p-2 rounded-lg border-2 border-purple-200 hover:bg-purple-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                title="Página anterior"
-              >
-                <ChevronLeft className="h-5 w-5 text-purple-600" />
-              </button>
 
-              <div className="flex items-center gap-1">
-                {/* Primera página */}
-                {currentPage > 3 && (
-                  <>
-                    <button
-                      onClick={() => changePage(1)}
-                      className="px-3 py-2 rounded-lg text-sm font-semibold text-purple-600 hover:bg-purple-50 transition-all"
-                    >
-                      1
-                    </button>
-                    {currentPage > 4 && (
-                      <span className="px-2 text-gray-400">...</span>
-                    )}
-                  </>
-                )}
 
-                {/* Páginas alrededor de la actual */}
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter(page => {
-                    return page === currentPage || 
-                           page === currentPage - 1 || 
-                           page === currentPage + 1 ||
-                           (currentPage <= 2 && page <= 3) ||
-                           (currentPage >= totalPages - 1 && page >= totalPages - 2)
-                  })
-                  .map(page => (
-                    <button
-                      key={page}
-                      onClick={() => changePage(page)}
-                      className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                        page === currentPage
-                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
-                          : 'text-purple-600 hover:bg-purple-50'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
-
-                {/* Última página */}
-                {currentPage < totalPages - 2 && (
-                  <>
-                    {currentPage < totalPages - 3 && (
-                      <span className="px-2 text-gray-400">...</span>
-                    )}
-                    <button
-                      onClick={() => changePage(totalPages)}
-                      className="px-3 py-2 rounded-lg text-sm font-semibold text-purple-600 hover:bg-purple-50 transition-all"
-                    >
-                      {totalPages}
-                    </button>
-                  </>
-                )}
-              </div>
-
-              <button
-                onClick={() => changePage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="p-2 rounded-lg border-2 border-purple-200 hover:bg-purple-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                title="Página siguiente"
-              >
-                <ChevronRight className="h-5 w-5 text-purple-600" />
-              </button>
-            </div>
-
-            <div className="text-sm text-gray-600 font-medium">
-              Página {currentPage} de {totalPages}
-            </div>
-          </div>
-        )}
       </div>
     </ProtectedLayout>
   )
