@@ -65,7 +65,6 @@ export default function InicioPage() {
     total,
     currentPage,
     totalPages,
-    pageSize,
     updateFilters,
     changePage,
   } = useCatalogProducts()
