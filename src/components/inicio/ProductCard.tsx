@@ -1,7 +1,7 @@
 // src/components/inicio/ProductCard.tsx
 import { ShoppingCart, Sparkles, Package, User } from 'lucide-react'
 import type { ProductoCatalogo } from '../../types/catalogo'
-import { formatearPrecio } from '../../services/catalogoApi'
+import { formatearPrecio, getImagenUrl } from '../../services/catalogoApi'
 import { agregarAlCarrito } from '../../utils/carrito'
 
 interface ProductCardProps {
@@ -26,7 +26,7 @@ export function ProductCard({ producto, onAddToCart }: ProductCardProps) {
       {/* Imagen del producto */}
       <div className="relative h-64 sm:h-72 overflow-hidden bg-gradient-to-br from-purple-100 to-pink-100">
         <img 
-          src={producto.imagen_url || '/placeholder-product.png'} 
+          src={getImagenUrl(producto.imagen_url)} 
           alt={producto.nombre}
           className="w-full h-full object-contain group-hover:scale-105 transition-all duration-500"
         />
