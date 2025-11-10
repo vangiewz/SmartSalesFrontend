@@ -2,7 +2,7 @@
 import axios from "axios";
 
 // Alterna manualmente entre local y producción
-const USE_PROD = false; // Cambia a true para producción
+const USE_PROD = true; // Cambia a true para producción
 const BASE_URLS = {
   local: "http://127.0.0.1:8000/api/",
   prod: "https://smartsalesbackend.onrender.com/api/",
