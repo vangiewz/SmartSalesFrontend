@@ -13,7 +13,7 @@ import ProductDeleteModal from '../components/productos/ProductDeleteModal'
 import { useAuth } from '../hooks/useAuth'
 import { useCatalogos } from '../hooks/useCatalogos'
 import { useProducts } from '../hooks/useProducts'
-import { createProducto, updateProducto, deleteProducto } from '../services/productosApi'
+import { useProductMutations, useProductDelete } from '../hooks/useProductMutations'
 import type { Producto, ProductoFilters as Filters, ProductoFormData } from '../types/producto'
 
 export default function GestionProductos() {
@@ -21,6 +21,8 @@ export default function GestionProductos() {
   const { user } = useAuth()
   const { marcas, tipos, loading: catalogsLoading } = useCatalogos()
   const { products, loading: productsLoading, pagination, loadProducts } = useProducts()
+  const { createProduct, updateProduct } = useProductMutations() // 🆕 Hook con soporte offline
+  const { deleteProduct } = useProductDelete() // 🆕 Hook para eliminar offline
 
   // Verificar permisos
   const is_admin = user?.is_admin || false
@@ -80,9 +82,14 @@ export default function GestionProductos() {
   // Handlers de CRUD
   const handleCreate = async (data: ProductoFormData) => {
     try {
-      await createProducto(data)
+      await createProduct(data)
       toast.success('Producto creado exitosamente')
-      await loadProducts(filters)
+      // Recargar lista ANTES de cerrar el modal
+      if (navigator.onLine) {
+        await loadProducts(filters)
+      }
+      // Cerrar modal después de recargar
+      setShowCreateModal(false)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error al crear producto'
       toast.error(message)
@@ -92,9 +99,14 @@ export default function GestionProductos() {
 
   const handleUpdate = async (id: number, data: Partial<ProductoFormData>) => {
     try {
-      await updateProducto(id, data)
+      await updateProduct(id, data as ProductoFormData)
       toast.success('Producto actualizado exitosamente')
-      await loadProducts(filters)
+      // Recargar lista ANTES de cerrar el modal
+      if (navigator.onLine) {
+        await loadProducts(filters)
+      }
+      // Cerrar modal después de recargar
+      setEditingProduct(null)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error al actualizar producto'
       toast.error(message)
@@ -104,9 +116,14 @@ export default function GestionProductos() {
 
   const handleDelete = async (id: number) => {
     try {
-      await deleteProducto(id)
+      await deleteProduct(id)
       toast.success('Producto eliminado exitosamente')
-      await loadProducts(filters)
+      // Recargar lista ANTES de cerrar el modal
+      if (navigator.onLine) {
+        await loadProducts(filters)
+      }
+      // Cerrar modal después de recargar
+      setDeletingProduct(null)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error al eliminar producto'
       toast.error(message)

@@ -12,6 +12,7 @@ export function useCatalogos() {
   useEffect(() => {
     async function loadCatalogos() {
       try {
+        // Intentar cargar desde el backend (online) o desde caché (offline)
         const [marcasData, tiposData] = await Promise.all([
           getMarcas(),
           getTipos()
@@ -19,8 +20,24 @@ export function useCatalogos() {
         setMarcas(marcasData)
         setTipos(tiposData)
       } catch (error) {
-        toast.error('Error al cargar catálogos')
-        console.error(error)
+        console.error('Error al cargar catálogos:', error)
+        
+        // Si estamos offline y el Service Worker no tiene caché, usar valores por defecto
+        if (!navigator.onLine) {
+          console.warn('⚠️ Offline: No se pudieron cargar catálogos desde caché');
+          toast.error('Sin conexión. Algunos datos pueden no estar disponibles.', {
+            duration: 3000
+          });
+        } else {
+          // Si estamos online pero falló, es un error real
+          toast.error('Error al cargar catálogos. Intenta recargar la página.', {
+            duration: 4000
+          });
+        }
+        
+        // Dejar arrays vacíos para evitar errores en la UI
+        setMarcas([])
+        setTipos([])
       } finally {
         setLoading(false)
       }

@@ -66,7 +66,8 @@ export default function ProductEditModal({
       }
 
       await onSave(producto.id, data)
-      onClose()
+      // ❌ NO cerrar aquí, el padre cierra después de recargar la lista
+      // onClose()
     } catch (error) {
       console.error('Error al actualizar producto:', error)
     } finally {

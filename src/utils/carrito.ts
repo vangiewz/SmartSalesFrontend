@@ -1,6 +1,7 @@
 // src/utils/carrito.ts
 
 const CARRITO_KEY = 'smartsales_carrito';
+const CARRITO_PRODUCTOS_KEY = 'smartsales_carrito_productos'; // 🆕 Cache de productos completos
 
 interface Carrito {
   [producto_id: string]: number; // cantidad
@@ -93,3 +94,66 @@ export const carritoToCheckoutItems = (carrito: Carrito) => {
     cantidad
   }));
 };
+
+// 🆕 =============================================
+// FUNCIONES PARA CACHE DE PRODUCTOS (PWA OFFLINE)
+// =============================================
+
+/**
+ * Guarda los datos completos de productos en cache para uso offline
+ */
+export const saveProductosCache = (productos: any[]) => {
+  try {
+    const cache: Record<string, any> = {};
+    productos.forEach(producto => {
+      cache[String(producto.id)] = producto;
+    });
+    localStorage.setItem(CARRITO_PRODUCTOS_KEY, JSON.stringify(cache));
+    console.log('💾 Cache de productos guardado:', Object.keys(cache).length);
+  } catch (error) {
+    console.error('Error al guardar cache de productos:', error);
+  }
+};
+
+/**
+ * Obtiene productos del cache para uso offline
+ */
+export const getProductosCache = (): Record<string, any> => {
+  try {
+    const cache = localStorage.getItem(CARRITO_PRODUCTOS_KEY);
+    return cache ? JSON.parse(cache) : {};
+  } catch (error) {
+    console.error('Error al obtener cache de productos:', error);
+    return {};
+  }
+};
+
+/**
+ * Actualiza un solo producto en el cache
+ */
+export const updateProductoCache = (producto: any) => {
+  try {
+    const cache = getProductosCache();
+    cache[String(producto.id)] = producto;
+    localStorage.setItem(CARRITO_PRODUCTOS_KEY, JSON.stringify(cache));
+  } catch (error) {
+    console.error('Error al actualizar cache de producto:', error);
+  }
+};
+
+/**
+ * Obtiene productos del carrito desde el cache (para offline)
+ */
+export const getProductosCarritoFromCache = (): any[] => {
+  const carrito = getCarrito();
+  const cache = getProductosCache();
+  const productIds = Object.keys(carrito);
+  
+  return productIds
+    .map(id => cache[id])
+    .filter(producto => producto !== undefined);
+};
+
+// NOTA: El carrito NO necesita sincronización con backend
+// Solo usa localStorage, por lo que funciona 100% offline
+// Las funciones actualizarCantidad y eliminarDelCarrito son suficientes

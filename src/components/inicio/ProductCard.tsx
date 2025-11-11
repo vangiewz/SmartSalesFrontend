@@ -2,7 +2,7 @@
 import { ShoppingCart, Sparkles, Package, User } from 'lucide-react';
 import type { ProductoCatalogo } from '../../types/catalogo';
 import { formatearPrecio } from '../../services/catalogoApi';
-import { agregarAlCarrito } from '../../utils/carrito';
+import { agregarAlCarrito, updateProductoCache } from '../../utils/carrito';
 import { getProductoImageUrl } from '../../utils/getProductoImageUrl';
 
 interface ProductCardProps {
@@ -16,7 +16,12 @@ export function ProductCard({ producto, onAddToCart }: ProductCardProps) {
   const handleAddToCart = () => {
     if (isAgotado) return;
 
+    // 💾 Guardar producto en cache para uso offline
+    updateProductoCache(producto);
+    
+    // Agregar al carrito (localStorage)
     agregarAlCarrito(producto.id, 1);
+    
     // El toast se muestra en el padre (Inicio.tsx)
     onAddToCart(producto.nombre);
   };

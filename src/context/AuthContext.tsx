@@ -21,6 +21,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Persistir sesión: revisar token y cargar usuario al montar
   useEffect(() => {
     const token = localStorage.getItem("access_token");
+    const cachedUser = localStorage.getItem("cached_user");
+    
     if (token) {
       // Si hay token, intenta cargar el usuario actual
       apiMe()
@@ -28,14 +30,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // cargar roles también si lo necesitas
           try {
             const rolesData = await getMyRoles();
-            setUser({ ...u, ...rolesData });
+            const fullUser = { ...u, ...rolesData };
+            setUser(fullUser);
+            // Cachear usuario para modo offline
+            localStorage.setItem("cached_user", JSON.stringify(fullUser));
           } catch {
             setUser(u);
+            localStorage.setItem("cached_user", JSON.stringify(u));
           }
         })
         .catch(() => {
-          setUser(null);
-          apiLogout();
+          // Si falla la conexión PERO hay usuario cacheado, usarlo (modo offline)
+          if (!navigator.onLine && cachedUser) {
+            console.log('📡 Modo offline: usando usuario cacheado');
+            try {
+              setUser(JSON.parse(cachedUser));
+            } catch {
+              setUser(null);
+              apiLogout();
+            }
+          } else {
+            // Si hay internet pero el token es inválido, cerrar sesión
+            setUser(null);
+            apiLogout();
+          }
         })
         .finally(() => setIsLoading(false));
     } else {
@@ -48,9 +66,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { user } = await apiRegister(payload);
     try {
       const rolesData = await getMyRoles();
-      setUser({ ...user, ...rolesData });
+      const fullUser = { ...user, ...rolesData };
+      setUser(fullUser);
+      localStorage.setItem("cached_user", JSON.stringify(fullUser));
     } catch {
       setUser(user);
+      localStorage.setItem("cached_user", JSON.stringify(user));
     }
   };
 
@@ -63,14 +84,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const fullUser = { ...user, ...rolesData };
       console.log('🔐 Login - Usuario completo:', fullUser);
       setUser(fullUser);
+      localStorage.setItem("cached_user", JSON.stringify(fullUser));
     } catch (error) {
       console.error('❌ Error al obtener roles:', error);
       setUser(user);
+      localStorage.setItem("cached_user", JSON.stringify(user));
     }
   };
 
   const logout = () => {
     apiLogout();
+    localStorage.removeItem("cached_user");
     setUser(null);
   };
 
