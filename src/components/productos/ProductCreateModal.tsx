@@ -59,7 +59,8 @@ export default function ProductCreateModal({
         tipoproducto_id: Number(tipoId),
         imagen: imagen!
       })
-      onClose()
+      // ❌ NO cerrar aquí, el padre cierra después de recargar la lista
+      // onClose()
     } catch (error) {
       console.error('Error al crear producto:', error)
     } finally {

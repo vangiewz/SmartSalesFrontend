@@ -24,7 +24,8 @@ export default function ProductDeleteModal({
     
     try {
       await onDelete(producto.id)
-      onClose()
+      // ❌ NO cerrar aquí, el padre cierra después de recargar la lista
+      // onClose()
     } catch (err) {
       // Manejo específico del error 409 (producto con ventas)
       const errorMessage = err instanceof Error ? err.message : 'Error al eliminar el producto'

@@ -2,7 +2,14 @@ import { getProductoImageUrl } from "../../utils/getProductoImageUrl";
 import { useState, useEffect } from "react";
 import ProtectedLayout from "../../components/ProtectedLayout";
 import { ShoppingCart, Plus, Minus, Trash2, Package, ArrowRight, Home } from "lucide-react";
-import { getCarrito, actualizarCantidad, eliminarDelCarrito, limpiarCarrito } from "../../utils/carrito";
+import { 
+  getCarrito,
+  actualizarCantidad,
+  eliminarDelCarrito,
+  limpiarCarrito,
+  saveProductosCache,
+  getProductosCarritoFromCache
+} from "../../utils/carrito";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { api } from "../../lib/client";
@@ -27,21 +34,45 @@ export default function CarritoPage() {
         return;
       }
 
-      const idsParam = productIds.join(",");
-      const response = await api.get<ProductoCatalogo[]>("carrito-voz/productos-carrito/", {
-        params: { ids: idsParam },
-      });
-
-      console.log("🛒 [Carrito] Productos recibidos del backend:", response.data);
-      if (response.data[0]) {
-        console.log("🛒 [Carrito] Primer producto:", {
-          id: (response.data[0] as any).id,
-          imagen_url: (response.data[0] as any).imagen_url,
-          imagen_key: (response.data[0] as any).imagen_key,
+      // 🌐 Intentar obtener desde API
+      try {
+        const idsParam = productIds.join(",");
+        const response = await api.get<ProductoCatalogo[]>("carrito-voz/productos-carrito/", {
+          params: { ids: idsParam },
         });
-      }
 
-      setProductos(response.data);
+        console.log("🛒 [Carrito] Productos recibidos del backend:", response.data);
+        if (response.data[0]) {
+          console.log("🛒 [Carrito] Primer producto:", {
+            id: (response.data[0] as any).id,
+            imagen_url: (response.data[0] as any).imagen_url,
+            imagen_key: (response.data[0] as any).imagen_key,
+          });
+        }
+
+        // 💾 Guardar en cache para uso offline
+        saveProductosCache(response.data);
+        setProductos(response.data);
+        
+      } catch (apiError) {
+        // 📡 Si falla la API (offline), usar cache
+        console.warn("⚠️ API no disponible, usando cache offline");
+        const productosCache = getProductosCarritoFromCache();
+        
+        if (productosCache.length > 0) {
+          console.log("✅ Productos cargados desde cache:", productosCache.length);
+          setProductos(productosCache);
+          toast.success("Mostrando carrito desde cache offline", { 
+            icon: "📦",
+            duration: 2000 
+          });
+        } else {
+          console.error("❌ No hay productos en cache");
+          toast.error("No hay datos en cache. Conéctate a internet primero.");
+          setProductos([]);
+        }
+      }
+      
     } catch (error) {
       console.error("❌ Error al cargar productos del carrito:", error);
       toast.error("Error al cargar el carrito");
@@ -94,11 +125,13 @@ export default function CarritoPage() {
       return;
     }
 
+    // Carrito usa solo localStorage, no necesita sync con backend
     actualizarCantidad(id, newCantidad);
     setCarrito((prev) => ({ ...prev, [id]: newCantidad }));
   };
 
   const handleEliminar = (id: number) => {
+    // Carrito usa solo localStorage, no necesita sync con backend
     eliminarDelCarrito(id);
     setCarrito((prev) => {
       const newCarrito = { ...prev };

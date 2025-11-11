@@ -4,6 +4,29 @@ import './index.css'
 import App from './App.tsx'
 import { AuthProvider } from './context/AuthContext.tsx'
 import { Toaster } from 'react-hot-toast'
+import { registerSW } from 'virtual:pwa-register'
+import { setupSyncListeners } from './utils/syncQueue'
+
+// Registrar Service Worker para PWA
+if ('serviceWorker' in navigator) {
+  registerSW({
+    onNeedRefresh() {
+      console.log('🔄 Nueva versión disponible')
+    },
+    onOfflineReady() {
+      console.log('✅ App lista para funcionar offline')
+    },
+    onRegisteredSW(swUrl: string) {
+      console.log('✅ Service Worker registrado:', swUrl)
+    },
+    onRegisterError(error: Error) {
+      console.error('❌ Error al registrar Service Worker:', error)
+    }
+  })
+  
+  // 🆕 Configurar listeners para sincronización automática
+  setupSyncListeners();
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
