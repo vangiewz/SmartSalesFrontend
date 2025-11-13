@@ -259,7 +259,7 @@ export default function AuthNavbar({ open, setOpen, isDesktop }: AuthNavbarProps
                 {canSeeIA && (
                   <li>
                     <NavLink
-                      to="/dashboard-ia"
+                      to="/IADashboard"
                       className={({ isActive }) =>
                         `flex items-center gap-4 px-5 py-3 rounded-2xl font-semibold text-base transition-all duration-150 ${
                           isActive
