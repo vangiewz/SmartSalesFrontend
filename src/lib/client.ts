@@ -9,7 +9,7 @@ const BASE_URLS = {
 };
 
 // ❗️NUEVO: URL fija de ngrok para la página especial
-const NGROK_URL = " https://daryl-draftable-overdogmatically.ngrok-free.dev/api/"
+const NGROK_URL = "https://daryl-draftable-overdogmatically.ngrok-free.dev/api/"
 // ============================
 // Cliente general (igual que antes)
 // ============================
